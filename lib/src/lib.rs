@@ -24,10 +24,7 @@ use tempfile::TempDir;
 use thiserror::Error;
 use wait_timeout::ChildExt;
 
-#[cfg(feature = "bin")]
 const PLUGIN_PATH: &'static str = env!("CARGO_BIN_FILE_PROTOC_PLUGIN_BIN");
-#[cfg(not(feature = "bin"))]
-const PLUGIN_PATH: &'static str = "FOO!! This is a dummy path!!!";
 
 /// Error type for this crate.
 #[derive(Error, Debug)]
