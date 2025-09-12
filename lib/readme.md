@@ -1,4 +1,5 @@
 A library for running protoc command with your own plugin code as a closure.
+
 When you develop your own protoc compiler plugin, normally you need to compile your code as an executable binary and run `protoc` command by yourself with passing the path to the binary.
 This crate provides a convenient replacement for that process: You just need to pass your code as a closure to this library, then it will run the `protoc` command as like as your closure is an executable binary.
 
@@ -49,3 +50,8 @@ your [Cargo workspace](https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.h
 [unstable]
 bindeps = true
 ```
+
+# Documentation
+Currently (Sep. 2025) because of docs.rs's limitation, you can't see the documentation of this crate on docs.rs. [issue thread](https://github.com/rust-lang/docs.rs/issues/2710)
+Please see the documentation on [GitHub Pages](https://wada314.github.io/protoc-plugin-by-closure/protoc_plugin_by_closure/index.html).
+
