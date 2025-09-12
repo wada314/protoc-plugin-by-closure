@@ -1,1 +1,0 @@
-rd_("Ahprotoc_plugin_by_closure")
