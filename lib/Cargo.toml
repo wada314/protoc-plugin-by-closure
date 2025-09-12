@@ -1,6 +1,6 @@
 [package]
 name = "protoc-plugin-by-closure"
-version = "0.1.7"
+version = "0.1.8"
 edition = "2024"
 description = "Use Google Protocol Buffer compiler (`protoc`) with your closure code."
 license = "Apache-2.0"
