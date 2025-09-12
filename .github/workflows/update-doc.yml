@@ -1,0 +1,25 @@
+name: Update Doc
+
+on:
+  push:
+    branches: 
+      - 'master'
+      - 'test-update-doc'
+    paths-ignore:
+      - 'target/doc/**'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build docs
+      run: cargo +nightly doc --verbose --no-deps -p protoc-plugin-by-closure --all-features
+    - name: Upload docs
+      uses: actions-js/github-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./target/doc
