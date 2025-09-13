@@ -6,9 +6,5 @@ description = "Proxy crate for protoc-plugin-bin dependency management"
 license = "Apache-2.0"
 
 [dependencies]
-# Only include protoc-plugin-bin when the feature is enabled
-protoc-plugin-bin = { path = "../bin", version = "0.1.2", artifact = "bin:protoc-plugin-bin", optional = true }
-
-[features]
-default = []
-nightly = ["protoc-plugin-bin"]
+# Include protoc-plugin-bin binary dependency (requires nightly compiler)
+protoc-plugin-bin = { path = "../bin", version = "0.1.2", artifact = "bin:protoc-plugin-bin" }

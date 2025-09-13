@@ -1,10 +1,8 @@
 # protoc-plugin-proxy
 
-This is a proxy crate that manages the dependency on `protoc-plugin-bin` binary, allowing the main library to compile with both stable and nightly Rust compilers.
+This is a proxy crate that provides access to the `protoc-plugin-bin` binary dependency using the unstable `bindeps` feature.
 
-## Features
-
-- **`nightly`**: Enables the `protoc-plugin-bin` binary dependency using the unstable `bindeps` feature (requires nightly compiler)
+**Note**: This crate requires nightly compiler due to the use of unstable `bindeps` feature.
 
 ## Usage
 

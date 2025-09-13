@@ -31,7 +31,7 @@ fn get_plugin_path() -> Result<&'static str> {
     #[cfg(feature = "nightly")]
     {
         use protoc_plugin_proxy::get_plugin_path as proxy_get_plugin_path;
-        proxy_get_plugin_path().map_err(|msg| ErrorKind::CallbackError(msg.to_string()))
+        Ok(proxy_get_plugin_path())
     }
     #[cfg(not(feature = "nightly"))]
     {
