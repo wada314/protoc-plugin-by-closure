@@ -4,7 +4,7 @@ This is a proxy crate that manages the dependency on `protoc-plugin-bin` binary,
 
 ## Features
 
-- **`with-binary`**: Enables the `protoc-plugin-bin` binary dependency using the unstable `bindeps` feature (requires nightly compiler)
+- **`nightly`**: Enables the `protoc-plugin-bin` binary dependency using the unstable `bindeps` feature (requires nightly compiler)
 
 ## Usage
 
@@ -20,7 +20,7 @@ protoc-plugin-by-closure = "0.1.9"
 ### For nightly compiler users who want the full functionality:
 ```toml
 [dependencies]
-protoc-plugin-by-closure = { version = "0.1.9", features = ["with-binary"] }
+protoc-plugin-by-closure = { version = "0.1.9", features = ["nightly"] }
 ```
 
 ## API

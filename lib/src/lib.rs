@@ -25,18 +25,18 @@ use wait_timeout::ChildExt;
 
 /// Get the plugin binary path
 ///
-/// Returns the path to the protoc-plugin-bin binary when the with-binary feature is enabled,
+/// Returns the path to the protoc-plugin-bin binary when the nightly feature is enabled,
 /// or an error when the feature is disabled.
 fn get_plugin_path() -> Result<&'static str> {
-    #[cfg(feature = "with-binary")]
+    #[cfg(feature = "nightly")]
     {
         use protoc_plugin_proxy::get_plugin_path as proxy_get_plugin_path;
         proxy_get_plugin_path().map_err(|msg| ErrorKind::CallbackError(msg.to_string()))
     }
-    #[cfg(not(feature = "with-binary"))]
+    #[cfg(not(feature = "nightly"))]
     {
         Err(ErrorKind::CallbackError(
-            "protoc-plugin-bin binary is not available. Please enable the 'with-binary' feature."
+            "protoc-plugin-bin binary is not available. Please enable the 'nightly' feature."
                 .to_string(),
         ))
     }

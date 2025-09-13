@@ -11,4 +11,4 @@ protoc-plugin-bin = { path = "../bin", version = "0.1.2", artifact = "bin:protoc
 
 [features]
 default = []
-with-binary = ["protoc-plugin-bin"]
+nightly = ["protoc-plugin-bin"]

@@ -24,8 +24,8 @@ puroro = "0.14.0"
 [features]
 default = ["on-memory"]
 on-memory = ["tempfile"]
-with-binary = ["protoc-plugin-proxy/with-binary"]
+nightly = ["protoc-plugin-proxy/nightly"]
 
 [package.metadata.docs.rs]
 cargo-args = ["-Zbindeps"]
-features = ["with-binary"]
+features = ["nightly"]
