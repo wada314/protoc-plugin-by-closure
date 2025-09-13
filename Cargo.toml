@@ -1,4 +1,4 @@
-[workspace],
+[workspace]
 members = ["lib", "bin", "proxy"]
 default-members = ["lib", "bin"]
 resolver = "2"
