@@ -14,20 +14,12 @@
 
 //! Proxy crate for managing protoc-plugin-bin dependency
 //!
-//! This crate provides access to the protoc-plugin-bin binary.
-//! Note: This crate requires nightly compiler due to the use of unstable `bindeps` feature.
+//! This crate provides access to the protoc-plugin-bin binary using the unstable `bindeps` feature.
+//! This crate requires nightly compiler.
 
 /// Get the plugin binary path
 ///
 /// Returns the path to the protoc-plugin-bin binary.
-/// This function is only available when compiled with nightly compiler.
 pub fn get_plugin_path() -> &'static str {
     env!("CARGO_BIN_FILE_PROTOC_PLUGIN_BIN")
-}
-
-/// Check if the binary dependency is available
-///
-/// Always returns true since this crate always includes the binary dependency.
-pub fn has_binary() -> bool {
-    true
 }
