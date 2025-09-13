@@ -38,11 +38,33 @@ The generated `CodeGeneratorResponse` bytes are sent back to the internal plugin
 - `on-memory`: Enabled by default.
 Provides [`ProtocOnMemory`] struct which makes you to run the `protoc` command without touching the actual filesystem. Because this feature is using the `tempfile` crate, you can disable it if you don't need it.
 
+- `nightly`: Optional feature that enables the bundled binary dependency.
+When enabled, uses the bundled `protoc-plugin-bin` binary (requires nightly compiler).
+When disabled, looks for `protoc-plugin-bin` in PATH (requires `cargo install protoc-plugin-bin`).
+
 # Requirements
 
-Nightly channel required.
+## For stable compiler users (recommended)
 
-This crate requires an unstable (as of 2024/06) [cargo feature `bindeps`](https://rust-lang.github.io/rfcs/3028-cargo-binary-dependencies.html).
+This crate works with stable Rust compiler. You need to install the `protoc-plugin-bin` binary:
+
+```bash
+cargo install protoc-plugin-bin
+```
+
+Make sure the binary is available in your PATH.
+
+## For nightly compiler users
+
+If you want to use the bundled binary dependency, enable the `nightly` feature:
+
+```toml
+[dependencies]
+protoc-plugin-by-closure = { version = "0.1.9", features = ["nightly"] }
+```
+
+This feature uses the unstable [cargo feature `bindeps`](https://rust-lang.github.io/rfcs/3028-cargo-binary-dependencies.html).
+
 This crate contains [.cargo/config.toml](.cargo/config.toml) file which enables this feature so you normally don't need to worry about it, but if you include this crate as a part of
 your [Cargo workspace](https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html), then you need to create the `.cargo/config.toml` file with the following contents *under your cargo workspace directory* manually (see [the official document](https://doc.rust-lang.org/cargo/reference/config.html) for the reasons):
 

@@ -25,20 +25,25 @@ use wait_timeout::ChildExt;
 
 /// Get the plugin binary path
 ///
-/// Returns the path to the protoc-plugin-bin binary when the nightly feature is enabled,
-/// or an error when the feature is disabled.
-fn get_plugin_path() -> Result<&'static str> {
+/// Returns the path to the protoc-plugin-bin binary.
+/// When nightly feature is enabled, uses the bundled binary from the proxy crate.
+/// Otherwise, looks for the binary in PATH (requires `cargo install protoc-plugin-bin`).
+fn get_plugin_path() -> Result<String> {
     #[cfg(feature = "nightly")]
     {
         use protoc_plugin_proxy::get_plugin_path as proxy_get_plugin_path;
-        Ok(proxy_get_plugin_path())
+        Ok(proxy_get_plugin_path().to_string())
     }
     #[cfg(not(feature = "nightly"))]
     {
-        Err(ErrorKind::CallbackError(
-            "protoc-plugin-bin binary is not available. Please enable the 'nightly' feature."
-                .to_string(),
-        ))
+        // Look for protoc-plugin-bin in PATH
+        match which::which("protoc-plugin-bin") {
+            Ok(path) => Ok(path.to_string_lossy().to_string()),
+            Err(_) => Err(ErrorKind::CallbackError(
+                "protoc-plugin-bin binary not found in PATH. Please install it with: cargo install protoc-plugin-bin"
+                    .to_string(),
+            )),
+        }
     }
 }
 
