@@ -15,7 +15,6 @@
 #![doc = include_str!("../readme.md")]
 
 use ipc_channel::ipc::{IpcBytesReceiver, IpcBytesSender, IpcOneShotServer};
-use std::env;
 use std::path::PathBuf;
 use std::process::{Command, ExitStatus};
 use std::time::Duration;
@@ -24,7 +23,24 @@ use tempfile::TempDir;
 use thiserror::Error;
 use wait_timeout::ChildExt;
 
-const PLUGIN_PATH: &'static str = env!("CARGO_BIN_FILE_PROTOC_PLUGIN_BIN");
+/// Get the plugin binary path
+///
+/// Returns the path to the protoc-plugin-bin binary when the with-binary feature is enabled,
+/// or an error when the feature is disabled.
+fn get_plugin_path() -> Result<&'static str> {
+    #[cfg(feature = "with-binary")]
+    {
+        use protoc_plugin_proxy::get_plugin_path as proxy_get_plugin_path;
+        proxy_get_plugin_path().map_err(|msg| ErrorKind::CallbackError(msg.to_string()))
+    }
+    #[cfg(not(feature = "with-binary"))]
+    {
+        Err(ErrorKind::CallbackError(
+            "protoc-plugin-bin binary is not available. Please enable the 'with-binary' feature."
+                .to_string(),
+        ))
+    }
+}
 
 /// Error type for this crate.
 #[derive(Error, Debug)]
@@ -134,10 +150,11 @@ impl Protoc {
     {
         let (ipc_init_server, ipc_init_name) = IpcOneShotServer::new()?;
 
+        let plugin_path = get_plugin_path()?;
         let mut process = Command::new(&self.protoc_path)
             .args(&[
                 // We name our plugin binary name as "rust-ppbc" here.
-                format!("--plugin=protoc-gen-rust-ppbc={}", PLUGIN_PATH),
+                format!("--plugin=protoc-gen-rust-ppbc={}", plugin_path),
                 format!(
                     "--rust-ppbc_out={}",
                     self.out_dir

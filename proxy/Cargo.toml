@@ -1,0 +1,14 @@
+[package]
+name = "protoc-plugin-proxy"
+version = "0.1.0"
+edition = "2021"
+description = "Proxy crate for protoc-plugin-bin dependency management"
+license = "Apache-2.0"
+
+[dependencies]
+# Only include protoc-plugin-bin when the feature is enabled
+protoc-plugin-bin = { path = "../bin", version = "0.1.2", artifact = "bin:protoc-plugin-bin", optional = true }
+
+[features]
+default = []
+with-binary = ["protoc-plugin-bin"]

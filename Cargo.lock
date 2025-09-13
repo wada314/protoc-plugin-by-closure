@@ -202,11 +202,18 @@ name = "protoc-plugin-by-closure"
 version = "0.1.9"
 dependencies = [
  "ipc-channel",
- "protoc-plugin-bin",
+ "protoc-plugin-proxy",
  "puroro",
  "tempfile",
  "thiserror 2.0.16",
  "wait-timeout",
+]
+
+[[package]]
+name = "protoc-plugin-proxy"
+version = "0.1.0"
+dependencies = [
+ "protoc-plugin-bin",
 ]
 
 [[package]]
