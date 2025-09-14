@@ -17,9 +17,13 @@
 //! This crate provides access to the protoc-plugin-bin binary using the unstable `bindeps` feature.
 //! This crate requires nightly compiler.
 
+use std::sync::LazyLock;
+
 /// Get the plugin binary path
 ///
 /// Returns the path to the protoc-plugin-bin binary.
 pub fn get_plugin_path() -> &'static str {
-    env!("CARGO_BIN_FILE_PROTOC_PLUGIN_BIN")
+    static path: LazyLock<String> =
+        LazyLock::new(|| std::env::var("CARGO_BIN_FILE_PROTOC_PLUGIN_BIN").unwrap());
+    &path
 }
