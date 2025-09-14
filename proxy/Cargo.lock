@@ -168,6 +168,8 @@ dependencies = [
 [[package]]
 name = "protoc-plugin-bin"
 version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "997c48474f81dc982463a85669a913a38eff945441054e788b07597318460438"
 dependencies = [
  "anyhow",
  "ipc-channel",
@@ -175,7 +177,7 @@ dependencies = [
 
 [[package]]
 name = "protoc-plugin-proxy"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "protoc-plugin-bin",
 ]
