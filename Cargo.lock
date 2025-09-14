@@ -215,7 +215,8 @@ dependencies = [
 [[package]]
 name = "protoc-plugin-bin"
 version = "0.1.2"
-source = "git+https://github.com/wada314/protoc-plugin-by-closure.git?branch=proxy#3df57c4d6154427b86b125d3ea4d3ed9ac793df0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "997c48474f81dc982463a85669a913a38eff945441054e788b07597318460438"
 dependencies = [
  "anyhow",
  "ipc-channel",
@@ -237,9 +238,10 @@ dependencies = [
 [[package]]
 name = "protoc-plugin-proxy"
 version = "0.1.0"
-source = "git+https://github.com/wada314/protoc-plugin-by-closure.git?branch=proxy#3df57c4d6154427b86b125d3ea4d3ed9ac793df0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b172d8ee1b36c9e9f7800736abf1a0ee78d44dac90b206153b738165e6cb218"
 dependencies = [
- "protoc-plugin-bin 0.1.2 (git+https://github.com/wada314/protoc-plugin-by-closure.git?branch=proxy)",
+ "protoc-plugin-bin 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
