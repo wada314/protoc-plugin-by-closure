@@ -1,4 +1,10 @@
 [workspace]
 members = ["lib", "bin"]
 default-members = ["lib", "bin"]
+# The proxy crate is not buildable with the stable compiler.
+# Even worse, its Cargo.toml is not parseable with the stable compiler.
+# But Cargo tries to parse it if it's included in the workspace,
+# even if there's no dependency on it.
+# So we exclude it from the workspace.
+exclude = ["proxy"]
 resolver = "2"
