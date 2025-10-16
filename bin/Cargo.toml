@@ -9,6 +9,7 @@ repository = "https://github.com/wada314/protoc-plugin-by-closure"
 [dependencies]
 anyhow = "1.0.95"
 ipc-channel = "0.20.1"
+protobuf-core = "0.1.0"
 
 [[bin]]
 name = "protoc-plugin-bin"

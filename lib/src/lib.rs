@@ -14,17 +14,17 @@
 
 #![doc = include_str!("../readme.md")]
 
-use ipc_channel::ipc::{IpcBytesReceiver, IpcBytesSender, IpcOneShotServer};
-use std::env;
-use std::path::PathBuf;
-use std::process::{Command, ExitStatus};
-use std::time::Duration;
+use ::ipc_channel::ipc::{IpcBytesReceiver, IpcBytesSender, IpcOneShotServer};
+use ::std::env;
+use ::std::path::PathBuf;
+use ::std::process::{Command, ExitStatus};
+use ::std::time::Duration;
 #[cfg(feature = "on-memory")]
-use tempfile::TempDir;
-use thiserror::Error;
-use wait_timeout::ChildExt;
+use ::tempfile::TempDir;
+use ::thiserror::Error;
+use ::wait_timeout::ChildExt;
 
-const PLUGIN_PATH: &'static str = env!("CARGO_BIN_FILE_PROTOC_PLUGIN_BIN");
+const PLUGIN_PATH: &str = env!("CARGO_BIN_FILE_PROTOC_PLUGIN_BIN");
 
 /// Error type for this crate.
 #[derive(Error, Debug)]
@@ -62,7 +62,7 @@ pub type Result<T> = ::std::result::Result<T, ErrorKind>;
 ///         .proto_file("my_protobuf_file2.proto")
 ///         .proto_path("path/to/my/input_proto_dir/")
 ///         .out_dir("path/to/my/output_dir/")
-///         .run(Duration::from_sec(3), |request_bytes| {
+///         .run(Duration::from_secs(3), |request_bytes| {
 ///             // Your plugin logic here, which takes the CodeGeneratorRequest bytes
 ///             // and returns the Result of CodeGeneratorResponse bytes.
 /// #           unimplemented!()
@@ -163,7 +163,7 @@ impl Protoc {
             .spawn()?;
 
         {
-            // recieve the ipc channels from the plugin exe.
+            // receive the ipc channels from the plugin exe.
             let (req_recv, res_send): (IpcBytesReceiver, IpcBytesSender) =
                 ipc_init_server.accept()?.1;
 
@@ -199,7 +199,7 @@ impl Protoc {
 /// # fn run_protoc() {
 ///     use protoc_plugin_by_closure::ProtocOnMemory;
 ///     use std::time::Duration;
-///     let result_files = Protoc::new()
+///     let result_files = ProtocOnMemory::new()
 ///         .add_file("my_protobuf_file.proto", r#"
 /// syntax = "proto3";
 /// package my_package;
@@ -212,7 +212,7 @@ impl Protoc {
 /// message MyMessage2 {
 ///   string name2 = 2;
 /// }"#)
-///         .run(Duration::from_sec(3), |request_bytes| {
+///         .run(Duration::from_secs(3), |request_bytes| {
 ///             // Your plugin logic here, which takes the CodeGeneratorRequest bytes
 ///             // and returns the Result of CodeGeneratorResponse bytes.
 /// #           unimplemented!()
@@ -269,7 +269,11 @@ impl ProtocOnMemory {
     {
         let proto_dir = TempDir::new()?;
         let out_dir = TempDir::new()?;
-        let out_dir_path = out_dir.path().to_str().unwrap().to_string();
+        let out_dir_path = out_dir
+            .path()
+            .to_str()
+            .ok_or(ErrorKind::FileNameError)?
+            .to_string();
 
         // write the proto files to the temp dir.
         for (name, content) in &self.in_files {
@@ -293,7 +297,7 @@ impl ProtocOnMemory {
 
         self.protoc
             .out_dir(&out_dir_path)
-            .proto_path(proto_dir.path().to_str().unwrap())
+            .proto_path(proto_dir.path().to_str().ok_or(ErrorKind::FileNameError)?)
             .proto_files(proto_file_paths)
             .run(timeout, func)?;
 

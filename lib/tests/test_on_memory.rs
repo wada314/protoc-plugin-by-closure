@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+mod compiler_plugin;
+
 use ::protoc_plugin_by_closure::ProtocOnMemory;
-use ::puroro::protobuf::google::protobuf::compiler::code_generator_response::File as ResFile;
-use ::puroro::protobuf::google::protobuf::compiler::{CodeGeneratorRequest, CodeGeneratorResponse};
-use ::puroro::{Message, MessageView};
-use ::std::io::Read;
 use ::std::time::Duration;
+
+use self::compiler_plugin::{CodeGeneratorRequest, CodeGeneratorResponse, File};
 
 #[test]
 fn test_on_memory() {
@@ -51,14 +51,19 @@ fn test_call_wrapper_inner(
     out_file_name: &str,
     out_file_content: &str,
 ) -> Vec<u8> {
-    let req = CodeGeneratorRequest::from_bytes_iter(req_bytes.bytes()).unwrap();
-    let input_files = req.proto_file().into_iter().collect::<Vec<_>>();
-    assert_eq!(input_files.len(), 1);
+    let req = CodeGeneratorRequest::from_bytes(req_bytes).unwrap();
+    // Check that we received one proto file
+    assert_eq!(req.proto_file_count, 1);
+
+    // Create response with one file
+    let file = File {
+        name: out_file_name.to_string(),
+        content: out_file_content.to_string(),
+    };
+
     let mut res = CodeGeneratorResponse::default();
-    let mut file = ResFile::default();
-    *file.name_mut() = out_file_name.to_string();
-    *file.content_mut() = out_file_content.to_string();
-    res.file_mut().push(file);
+    res.files.push(file);
+
     let mut res_bytes = Vec::new();
     res.to_bytes(&mut res_bytes).unwrap();
     res_bytes
