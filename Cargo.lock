@@ -176,7 +176,7 @@ dependencies = [
 
 [[package]]
 name = "protoc-plugin-bin"
-version = "0.1.2"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "ipc-channel",
@@ -185,7 +185,7 @@ dependencies = [
 
 [[package]]
 name = "protoc-plugin-by-closure"
-version = "0.1.9"
+version = "0.2.0"
 dependencies = [
  "ipc-channel",
  "protobuf-core",
