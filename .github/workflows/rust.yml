@@ -18,6 +18,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Install protoc
+      run: |
+        PROTOC_ZIP=protoc-24.4-linux-x86_64.zip
+        curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v24.4/$PROTOC_ZIP
+        sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
+        sudo unzip -o $PROTOC_ZIP -d /usr/local 'include/*'
+        rm -f $PROTOC_ZIP
+
     - name: Build
       run: cargo +nightly build --verbose
     - name: Run tests
