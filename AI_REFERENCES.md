@@ -186,7 +186,7 @@ No changes needed in the library code for protobuf-core integration.
 **Status**: ✅ **COMPLETED**
 
 **Summary of Changes**:
-- Created `lib/tests/compiler_plugin.rs` - Minimal implementation of protobuf compiler messages
+- Created `lib/tests/compiler_plugin/mod.rs` - Minimal implementation of protobuf compiler messages
 - Implemented `CodeGeneratorRequest`, `CodeGeneratorResponse`, and `File` using protobuf-core
 - Updated `test_on_memory.rs` and `test_call_wrapper.rs` to use the new implementation
 - Successfully removed `puroro = "0.14.0"` from dev-dependencies
@@ -194,7 +194,9 @@ No changes needed in the library code for protobuf-core integration.
 
 **Implementation Details**:
 
-Created minimal protobuf message implementations in `lib/tests/compiler_plugin.rs`:
+Created minimal protobuf message implementations in `lib/tests/compiler_plugin/mod.rs`:
+- Placed in subdirectory to avoid being treated as a separate test crate
+- Shared module accessible to all integration tests
 - `CodeGeneratorRequest` - Parses and counts proto_file fields (field 15)
 - `CodeGeneratorResponse` - Serializes file list (field 15)
 - `File` - Represents generated files with name (field 1) and content (field 15)
