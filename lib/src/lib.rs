@@ -14,15 +14,15 @@
 
 #![doc = include_str!("../readme.md")]
 
-use ipc_channel::ipc::{IpcBytesReceiver, IpcBytesSender, IpcOneShotServer};
-use std::env;
-use std::path::PathBuf;
-use std::process::{Command, ExitStatus};
-use std::time::Duration;
+use ::ipc_channel::ipc::{IpcBytesReceiver, IpcBytesSender, IpcOneShotServer};
+use ::std::env;
+use ::std::path::PathBuf;
+use ::std::process::{Command, ExitStatus};
+use ::std::time::Duration;
 #[cfg(feature = "on-memory")]
-use tempfile::TempDir;
-use thiserror::Error;
-use wait_timeout::ChildExt;
+use ::tempfile::TempDir;
+use ::thiserror::Error;
+use ::wait_timeout::ChildExt;
 
 const PLUGIN_PATH: &'static str = env!("CARGO_BIN_FILE_PROTOC_PLUGIN_BIN");
 
