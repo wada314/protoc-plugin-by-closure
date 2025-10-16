@@ -19,6 +19,9 @@ use ::std::io::{Read, Write, stdin, stdout};
 
 // Field number for CodeGeneratorRequest.parameter field
 // See: google/protobuf/compiler/plugin.proto in the Google Protobuf repository.
+//
+// The parameter field contains the IPC initialization key passed via --rust-ppbc_opt.
+// We use protobuf-core to parse this single field without deserializing the entire message.
 const CODE_GENERATOR_REQUEST_PARAMETER_FIELD_NUMBER: u32 = 2;
 
 fn find_last_string_field(input: &[u8], target_field_number: u32) -> Result<Option<String>> {

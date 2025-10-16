@@ -2,17 +2,7 @@
 
 ## Summary
 
-This document serves as a comprehensive reference for AI agents working on the protoc-plugin-by-closure project. It documents the current migration effort to replace the `puroro` dependency with the minimal `protobuf-core` crate.
-
-**Key Points**:
-- **Goal**: Replace `puroro` (large protobuf library) with `protobuf-core` (minimal utility library)
-- **Scope**: Replace hand-written protobuf parsing code in `bin/src/main.rs` and `puroro` dependency in tests
-- **Status**: ✅ **COMPLETED** - Both Phase 1 and Phase 2 successfully finished
-- **Impact**: 
-  - Removed all `puroro` dependencies (production and dev)
-  - Reduced code from 133 lines to 62 lines in bin/src/main.rs (53% reduction)
-  - Created minimal ~130-line test helper using protobuf-core
-  - All tests passing successfully
+This document serves as a comprehensive reference for AI agents and developers working on the protoc-plugin-by-closure project. It documents key architectural decisions, implementation details, and design rationale.
 
 ## Project Overview
 This project provides a way to use Google Protocol Buffer compiler (`protoc`) with closure code in Rust. It implements a protoc plugin system that allows custom code generation through user-defined closures.
@@ -21,44 +11,46 @@ This project provides a way to use Google Protocol Buffer compiler (`protoc`) wi
 - **Primary implementation**: Rust
 - **Focus**: Providing flexible protoc plugin functionality for Rust developers
 
-## Current Migration Goal
+## Architecture & Design Decisions
 
-### Dependency Migration: puroro → protobuf-core
+### Why protobuf-core Instead of a Full Protobuf Library?
 
-**Objective**: Replace the dependency on `puroro` crate with the minimal `protobuf-core` crate.
+**Decision**: Use `protobuf-core` crate for all protobuf parsing needs instead of comprehensive protobuf libraries like `prost`.
 
 **Rationale**:
-- `puroro` is a comprehensive protobuf implementation but is too large for our needs
-- `protobuf-core` is a minimal protobuf utility library that provides only the essentials:
-  - Common definitions, constants, and enums
-  - Varint encoding/decoding
-  - Tag operations
-  - Field reading/writing utilities
-  - Wire format constants
-- This change will reduce the dependency footprint and align with our minimal requirements
+- **Minimal requirements**: This crate only needs to:
+  - Parse one field from `CodeGeneratorRequest` (the `parameter` field containing IPC init key)
+  - Serialize `CodeGeneratorResponse` messages in tests
+- **Dependency footprint**: Full protobuf libraries are too large for such minimal needs
+- **Maintainability**: Less code to maintain, fewer transitive dependencies
 
-**Current State**:
-- `puroro = "0.14.0"` is currently used in `dev-dependencies` (lib/Cargo.toml) for testing
-- No production dependency on `puroro` exists
+**protobuf-core capabilities used**:
+- Varint encoding/decoding
+- Tag operations
+- Field reading/writing utilities
+- Wire format constants and types
 
-**Target State**:
-- Replace `puroro` with `protobuf-core` in `dev-dependencies`
-- Migrate test code to use `protobuf-core` APIs
-- Ensure all tests continue to pass after migration
-
-**Related Project**: 
-- `protobuf-core` crate: A minimal protobuf utility library created specifically to reduce implementation barriers
-- Version: 0.1.0
-- Repository: https://github.com/wada314/protobuf-core
+**Related Resources**: 
+- `protobuf-core` crate: https://github.com/wada314/protobuf-core
 - Documentation: https://docs.rs/protobuf-core/
-- See: `../protobuf-core/AI_REFERENCES.md` for detailed information about protobuf-core design and implementation
+- Version used: 0.1.0
 
 ## Project Structure
-- `lib/` - Main library crate (`protoc-plugin-by-closure`)
-- `bin/` - Binary crate for the protoc plugin executable (`protoc-plugin-bin`)
-- `tests/` - Integration tests
-  - `test_on_memory.rs` - Tests for on-memory plugin execution
-  - `test_call_wrapper.rs` - Tests for plugin call wrapper functionality
+
+```
+protoc-plugin-by-closure/
+├── lib/                              # Main library crate
+│   ├── src/lib.rs                    # Public API (Protoc, ProtocOnMemory)
+│   ├── tests/
+│   │   ├── compiler_plugin/mod.rs   # Minimal protobuf message implementations
+│   │   ├── test_on_memory.rs        # Tests for on-memory execution
+│   │   └── test_call_wrapper.rs     # Tests for plugin call wrapper
+│   └── Cargo.toml
+├── bin/                              # Plugin binary crate
+│   ├── src/main.rs                   # Protobuf parsing with protobuf-core
+│   └── Cargo.toml
+└── AI_REFERENCES.md                  # This file
+```
 
 ## Key Features
 - IPC-based communication with protoc
@@ -73,147 +65,121 @@ This project provides a way to use Google Protocol Buffer compiler (`protoc`) wi
 - `wait-timeout` - For timeout support
 - `tempfile` - For on-memory feature (optional)
 
-## Code Replacement Candidates
+## Implementation Details
 
-### bin/src/main.rs - Hand-written Protobuf Parsing Code
+### bin/src/main.rs - Plugin Binary
 
-The following hand-written protobuf parsing code can be replaced with `protobuf-core` APIs:
+**Purpose**: Receives `CodeGeneratorRequest` from protoc via stdin, extracts the IPC initialization key from the `parameter` field, and establishes IPC communication with the library.
 
-1. **`eat_variant_i64()` function** (lines 19-40)
-   - Current: Manual varint decoding implementation
-   - Replace with: `protobuf_core::ReadExtVarint::read_varint()` or `protobuf_core::IteratorExtVarint::try_collect_varint()`
-   - Benefits: Tested, well-documented API from protobuf-core
-
-2. **`eat_variant_i32()` function** (lines 42-44)
-   - Current: Wraps `eat_variant_i64()` with `try_into()`
-   - Replace with: `protobuf_core::Varint::try_to_int32()` after reading varint
-   - Benefits: Proper error handling with `ProtobufError::VarintDowncastOutOfRange`
-
-3. **Wire type enum** (lines 47-68)
-   - Current: Local `Wire` enum with `TryFrom<i32>` implementation
-   - Replace with: `protobuf_core::WireType`
-   - Benefits: Standard wire type definition with proper error handling
-
-4. **`find_last_string_field()` function** (lines 46-110)
-   - Current: Manual protobuf field parsing with wire type handling
-   - Replace with: `protobuf_core::ReadExtProtobuf::read_protobuf_fields()` iterator
-   - Benefits: Complete field parsing with all wire types supported, cleaner code
-
-**Implementation Strategy**:
-- Replace the entire manual parsing logic in `bin/src/main.rs` with `protobuf-core` APIs
-- This will make the code more maintainable and reduce the risk of parsing bugs
-- The binary's functionality will remain the same - parsing `CodeGeneratorRequest` to extract the IPC init key
-
-**Example Code Transformation**:
-
-Before (manual parsing):
+**Key Implementation**:
 ```rust
-fn find_last_string_field(mut input: &[u8], target_field_number: i32) -> Result<Option<String>> {
-    // ... manual wire type enum definition
-    // ... manual tag and field parsing with eat_variant_i64/i32
-}
-```
-
-After (using protobuf-core):
-```rust
-use protobuf_core::{ReadExtProtobuf, FieldValue};
+// Field number for CodeGeneratorRequest.parameter field
+// See: google/protobuf/compiler/plugin.proto
+const CODE_GENERATOR_REQUEST_PARAMETER_FIELD_NUMBER: u32 = 2;
 
 fn find_last_string_field(input: &[u8], target_field_number: u32) -> Result<Option<String>> {
-    let mut result: Option<String> = None;
-    let mut cursor = std::io::Cursor::new(input);
-    
-    for field in cursor.read_protobuf_fields() {
-        let field = field?;
-        if field.field_number().as_u32() == target_field_number {
-            if let FieldValue::Len(bytes) = field.value() {
-                result = Some(String::from_utf8(bytes.clone())?);
+    // Uses protobuf-core to parse protobuf fields without full message deserialization
+    for field_result in input.read_protobuf_fields() {
+        let field = field_result?;
+        if field.field_number.as_u32() == target_field_number {
+            if let FieldValue::Len(bytes) = field.value {
+                result = Some(String::from_utf8(bytes)?);
             }
         }
     }
-    
     Ok(result)
 }
 ```
 
-Benefits:
-- No need to manually handle wire types
-- No need to manually parse varints and tags
-- Better error handling with `ProtobufError`
-- More readable and maintainable code
+**Why this approach?**
+- Only one field (`parameter`) needs to be extracted
+- Full message deserialization would be overkill
+- Minimal dependencies and code footprint
+- Uses `protobuf-core` for reliable protobuf parsing
 
-### lib/src/lib.rs - No Replacement Needed
+### lib/tests/compiler_plugin/mod.rs - Test Helper
 
-The library code (`lib/src/lib.rs`) does not contain protobuf parsing logic. It only manages:
-- IPC communication with the plugin binary
-- `protoc` command execution
-- Temporary file management for on-memory mode
+**Purpose**: Minimal implementation of `google.protobuf.compiler` messages for testing, using only protobuf-core APIs.
 
-No changes needed in the library code for protobuf-core integration.
+**Implemented Messages**:
+- `CodeGeneratorRequest` - Parses and counts `proto_file` fields (field 15)
+- `CodeGeneratorResponse` - Serializes list of generated files (field 15)
+- `File` - Represents generated files with `name` (field 1) and `content` (field 15)
 
-## Next Actions for Migration
+**Key Design Decisions**:
+1. **Returns `protobuf_core::Result`**: Uses protobuf-core's error type instead of converting to `std::io::Error`
+2. **Minimal implementation**: Only implements fields needed for testing
+3. **No full deserialization**: `CodeGeneratorRequest` only counts files, doesn't parse `FileDescriptorProto`
+4. **Module structure**: Placed in `tests/compiler_plugin/mod.rs` to avoid being treated as a test crate
 
-### Phase 1: Replace bin/src/main.rs with protobuf-core
-- [x] 1. Add `protobuf-core = "0.1.0"` to dependencies in `bin/Cargo.toml`
-- [x] 2. Add `use protobuf_core::{ReadExtProtobuf, FieldValue};` to `bin/src/main.rs`
-- [x] 3. Remove `eat_variant_i64()` function (lines 19-40)
-- [x] 4. Remove `eat_variant_i32()` function (lines 42-44)
-- [x] 5. Remove local `Wire` enum definition (lines 47-68)
-- [x] 6. Replace `find_last_string_field()` implementation with protobuf-core APIs
-- [x] 7. Update error handling to work with `protobuf_core::ProtobufError`
-- [x] 8. Run `cargo build --package protoc-plugin-bin` to verify compilation
-- [x] 9. Run integration tests: `cargo test` to verify functionality
-- [x] 10. Manual testing with actual protoc if needed
+**Example Usage**:
+```rust
+// In test code
+let req = CodeGeneratorRequest::from_bytes(req_bytes)?;
+assert_eq!(req.proto_file_count, 1);
 
-**Status**: ✅ **COMPLETED**
+let mut res = CodeGeneratorResponse::default();
+res.files.push(File {
+    name: "output.rs".to_string(),
+    content: "// generated code".to_string(),
+});
+res.to_bytes(&mut writer)?;
+```
 
-**Summary of Changes**:
-- Replaced ~90 lines of manual protobuf parsing code with ~20 lines using protobuf-core APIs
-- Removed `eat_variant_i64()`, `eat_variant_i32()`, and local `Wire` enum
-- Simplified `find_last_string_field()` function significantly
-- Error handling now leverages `protobuf_core::ProtobufError` (wrapped in anyhow)
-- Build successful with no errors or warnings
-- Code is more maintainable and less error-prone
+### lib/src/lib.rs - Main Library
 
-**Key Benefits**:
-1. **Code reduction**: 90 lines → 20 lines (~78% reduction)
-2. **Maintainability**: No need to maintain manual varint/tag parsing logic
-3. **Reliability**: Using well-tested protobuf-core library
-4. **Error handling**: Better error messages from protobuf-core
-5. **Future-proof**: Automatically benefits from protobuf-core improvements
+**Purpose**: Provides high-level API for running protoc with custom plugin code via closures.
 
-### Phase 2: Replace dev-dependencies in tests
+**No protobuf parsing**: This module only manages process execution, IPC communication, and file I/O. All protobuf parsing is delegated to the plugin binary.
 
-**Status**: ✅ **COMPLETED**
+## For Future Developers / AI Agents
 
-**Summary of Changes**:
-- Created `lib/tests/compiler_plugin/mod.rs` - Minimal implementation of protobuf compiler messages
-- Implemented `CodeGeneratorRequest`, `CodeGeneratorResponse`, and `File` using protobuf-core
-- Updated `test_on_memory.rs` and `test_call_wrapper.rs` to use the new implementation
-- Successfully removed `puroro = "0.14.0"` from dev-dependencies
-- All tests pass successfully
+### Adding New Protobuf Functionality
 
-**Implementation Details**:
+If you need to extend protobuf parsing capabilities:
 
-Created minimal protobuf message implementations in `lib/tests/compiler_plugin/mod.rs`:
-- Placed in subdirectory to avoid being treated as a separate test crate
-- Shared module accessible to all integration tests
-- `CodeGeneratorRequest` - Parses and counts proto_file fields (field 15)
-- `CodeGeneratorResponse` - Serializes file list (field 15)
-- `File` - Represents generated files with name (field 1) and content (field 15)
+1. **Use protobuf-core APIs**: Don't write manual parsing code
+2. **Reference field numbers**: See `google/protobuf/compiler/plugin.proto` and `google/protobuf/descriptor.proto` for official field definitions
+3. **Follow existing patterns**: See `lib/tests/compiler_plugin/mod.rs` for examples
 
-Used protobuf-core APIs:
-- `ReadExtProtobuf::read_protobuf_fields()` - for parsing request
-- `WriteExtProtobuf::write_protobuf_field()` - for serializing response
-- `Field`, `FieldValue`, `FieldNumber` - for field manipulation
+### Common Tasks
 
-**Key Benefits**:
-1. **No external dependencies**: Tests no longer depend on the large `puroro` crate
-2. **Minimal implementation**: Only ~130 lines of code for necessary functionality
-3. **Direct control**: Custom implementation tailored to testing needs
-4. **Learning value**: Demonstrates how to use protobuf-core for real-world protobuf messages
-5. **Consistency**: Both production code (bin) and test code now use protobuf-core
+**Parsing additional fields from CodeGeneratorRequest**:
+```rust
+// Add constant for field number (from plugin.proto)
+const MY_FIELD_NUMBER: u32 = X;
 
-### Phase 3: Documentation and Cleanup
-1. Update documentation if needed
-2. Update AI_REFERENCES.md with completion status
+// Use the same iteration pattern as find_last_string_field()
+for field_result in input.read_protobuf_fields() {
+    let field = field_result?;
+    if field.field_number.as_u32() == MY_FIELD_NUMBER {
+        // Handle field based on its FieldValue variant
+    }
+}
+```
+
+**Extending test helper with new message types**:
+- Add message structs to `lib/tests/compiler_plugin/mod.rs`
+- Implement parsing with `ReadExtProtobuf::read_protobuf_fields()`
+- Implement serialization with `WriteExtProtobuf::write_protobuf_field()`
+- Return `protobuf_core::Result` for consistency
+
+### Dependencies
+
+**Production dependencies**:
+- `protobuf-core = "0.1.0"` (in `bin/Cargo.toml` only)
+- Keep this minimal - no full protobuf libraries
+
+**Dev dependencies**:
+- `protobuf-core = "0.1.0"` (in `lib/Cargo.toml`)
+- Used only for test helpers
+
+### Testing
+
+Run tests with: `cargo test`
+
+Tests verify:
+- IPC communication between library and plugin binary
+- Protobuf parsing in the plugin binary
+- Both on-memory and file-based execution modes
 

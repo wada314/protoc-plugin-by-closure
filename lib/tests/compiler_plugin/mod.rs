@@ -18,6 +18,12 @@
 //! using protobuf-core for parsing and serialization.
 //!
 //! See: google/protobuf/compiler/plugin.proto in the Google Protobuf repository.
+//!
+//! ## Why a custom implementation?
+//!
+//! This crate uses `protobuf-core` instead of full protobuf libraries (prost, protobuf, etc.)
+//! to minimize dependencies. The test helper only implements the minimal fields needed
+//! for testing (CodeGeneratorRequest.proto_file count, CodeGeneratorResponse.file list).
 
 use ::protobuf_core::{Field, FieldNumber, FieldValue, ReadExtProtobuf, WriteExtProtobuf};
 use ::std::io::Write;
