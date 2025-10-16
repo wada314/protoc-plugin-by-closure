@@ -6,9 +6,13 @@ This document serves as a comprehensive reference for AI agents working on the p
 
 **Key Points**:
 - **Goal**: Replace `puroro` (large protobuf library) with `protobuf-core` (minimal utility library)
-- **Scope**: Replace hand-written protobuf parsing code in `bin/src/main.rs` with `protobuf-core` APIs
-- **Status**: Planning phase - detailed analysis and migration plan documented below
-- **Impact**: Reduced dependency footprint, more maintainable code, better error handling
+- **Scope**: Replace hand-written protobuf parsing code in `bin/src/main.rs` and `puroro` dependency in tests
+- **Status**: ✅ **COMPLETED** - Both Phase 1 and Phase 2 successfully finished
+- **Impact**: 
+  - Removed all `puroro` dependencies (production and dev)
+  - Reduced code from 133 lines to 62 lines in bin/src/main.rs (53% reduction)
+  - Created minimal ~130-line test helper using protobuf-core
+  - All tests passing successfully
 
 ## Project Overview
 This project provides a way to use Google Protocol Buffer compiler (`protoc`) with closure code in Rust. It implements a protoc plugin system that allows custom code generation through user-defined closures.
@@ -179,27 +183,33 @@ No changes needed in the library code for protobuf-core integration.
 
 ### Phase 2: Replace dev-dependencies in tests
 
-**Current `puroro` usage in tests** (`test_on_memory.rs` and `test_call_wrapper.rs`):
-- `CodeGeneratorRequest::from_bytes_iter()` - Deserialize request from bytes
-- `CodeGeneratorResponse` and `File` message construction
-- `Message` and `MessageView` traits for serialization/deserialization
-- Field accessors: `req.proto_file()`, `file.name_mut()`, `file.content_mut()`, etc.
-- `res.to_bytes()` - Serialize response to bytes
+**Status**: ✅ **COMPLETED**
 
-**Challenge**: `protobuf-core` provides only low-level utilities (varint, tag, field I/O), but does NOT provide `google.protobuf.compiler.*` message implementations. These tests need full message implementation.
+**Summary of Changes**:
+- Created `lib/tests/compiler_plugin.rs` - Minimal implementation of protobuf compiler messages
+- Implemented `CodeGeneratorRequest`, `CodeGeneratorResponse`, and `File` using protobuf-core
+- Updated `test_on_memory.rs` and `test_call_wrapper.rs` to use the new implementation
+- Successfully removed `puroro = "0.14.0"` from dev-dependencies
+- All tests pass successfully
 
-**Options**:
-1. Keep `puroro` in `dev-dependencies` for now (only used in tests, acceptable dependency)
-2. Implement minimal `CodeGeneratorRequest`/`CodeGeneratorResponse` using `protobuf-core` primitives
-3. Find a lighter alternative to `puroro` that only implements compiler messages
-4. Generate the compiler messages using a protoc plugin (recursive dependency)
+**Implementation Details**:
 
-**Recommended approach**: Keep `puroro` in `dev-dependencies` for testing purposes. The main goal of replacing `puroro` in production code (bin/src/main.rs) is more important than removing it from test code.
+Created minimal protobuf message implementations in `lib/tests/compiler_plugin.rs`:
+- `CodeGeneratorRequest` - Parses and counts proto_file fields (field 15)
+- `CodeGeneratorResponse` - Serializes file list (field 15)
+- `File` - Represents generated files with name (field 1) and content (field 15)
 
-**Action items**:
-1. ✅ Document the `puroro` usage situation
-2. Keep `puroro` in `dev-dependencies` for test code
-3. No immediate action needed for Phase 2
+Used protobuf-core APIs:
+- `ReadExtProtobuf::read_protobuf_fields()` - for parsing request
+- `WriteExtProtobuf::write_protobuf_field()` - for serializing response
+- `Field`, `FieldValue`, `FieldNumber` - for field manipulation
+
+**Key Benefits**:
+1. **No external dependencies**: Tests no longer depend on the large `puroro` crate
+2. **Minimal implementation**: Only ~130 lines of code for necessary functionality
+3. **Direct control**: Custom implementation tailored to testing needs
+4. **Learning value**: Demonstrates how to use protobuf-core for real-world protobuf messages
+5. **Consistency**: Both production code (bin) and test code now use protobuf-core
 
 ### Phase 3: Documentation and Cleanup
 1. Update documentation if needed

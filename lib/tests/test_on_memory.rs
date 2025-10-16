@@ -14,8 +14,8 @@
 
 mod compiler_plugin;
 
-use protoc_plugin_by_closure::ProtocOnMemory;
-use std::time::Duration;
+use ::protoc_plugin_by_closure::ProtocOnMemory;
+use ::std::time::Duration;
 
 use compiler_plugin::{CodeGeneratorRequest, CodeGeneratorResponse, File};
 
@@ -54,16 +54,16 @@ fn test_call_wrapper_inner(
     let req = CodeGeneratorRequest::from_bytes(req_bytes).unwrap();
     // Check that we received one proto file
     assert_eq!(req.proto_file_count, 1);
-
+    
     // Create response with one file
     let file = File {
         name: out_file_name.to_string(),
         content: out_file_content.to_string(),
     };
-
+    
     let mut res = CodeGeneratorResponse::default();
     res.files.push(file);
-
+    
     let mut res_bytes = Vec::new();
     res.to_bytes(&mut res_bytes).unwrap();
     res_bytes

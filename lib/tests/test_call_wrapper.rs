@@ -14,23 +14,35 @@
 
 mod compiler_plugin;
 
-use protoc_plugin_by_closure::ProtocOnMemory;
+use protoc_plugin_by_closure::Protoc;
+use std::io::Write;
 use std::time::Duration;
+use tempfile::{tempdir, NamedTempFile};
 
 use compiler_plugin::{CodeGeneratorRequest, CodeGeneratorResponse, File};
 
 #[test]
-fn test_on_memory() {
+fn test_call_wrapper() {
+    let out_dir = tempdir().unwrap();
     let out_file_name = "empty_test.rs";
     let out_file_content = "This\nis\na\ntest";
-    let proto_file_name = "empty_input.rs";
-    let proto_file_content = "
-syntax = \"proto3\";
+    let proto_dir = tempdir().unwrap();
+    let proto_file = NamedTempFile::new_in(proto_dir.path()).unwrap();
+    let proto_file_content = r#"
+syntax = "proto3";
 package empty;
-    ";
+"#;
 
-    let result_files = ProtocOnMemory::new()
-        .add_file(proto_file_name, proto_file_content)
+    proto_file
+        .as_file()
+        .write_all(proto_file_content.as_bytes())
+        .unwrap();
+
+    Protoc::new()
+        .protoc_path("protoc")
+        .out_dir(out_dir.path().to_str().unwrap())
+        .proto_file(proto_file.path().to_str().unwrap())
+        .proto_path(proto_dir.path().to_str().unwrap())
         .run(Duration::from_secs(3), |req| {
             Ok(test_call_wrapper_inner(
                 req,
@@ -40,10 +52,8 @@ package empty;
         })
         .unwrap();
 
-    assert_eq!(result_files.len(), 1);
-    let (result_name, result_content) = &result_files[0];
-    assert_eq!(result_name, out_file_name);
-    assert_eq!(result_content, out_file_content);
+    let actual_out = ::std::fs::read_to_string(out_dir.path().join(out_file_name)).unwrap();
+    assert_eq!(actual_out, out_file_content);
 }
 
 fn test_call_wrapper_inner(
@@ -54,16 +64,16 @@ fn test_call_wrapper_inner(
     let req = CodeGeneratorRequest::from_bytes(req_bytes).unwrap();
     // Check that we received one proto file
     assert_eq!(req.proto_file_count, 1);
-
+    
     // Create response with one file
     let file = File {
         name: out_file_name.to_string(),
         content: out_file_content.to_string(),
     };
-
+    
     let mut res = CodeGeneratorResponse::default();
     res.files.push(file);
-
+    
     let mut res_bytes = Vec::new();
     res.to_bytes(&mut res_bytes).unwrap();
     res_bytes
