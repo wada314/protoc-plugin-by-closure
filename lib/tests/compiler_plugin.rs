@@ -20,7 +20,7 @@
 //! See: google/protobuf/compiler/plugin.proto in the Google Protobuf repository.
 
 use ::protobuf_core::{Field, FieldNumber, FieldValue, ReadExtProtobuf, WriteExtProtobuf};
-use ::std::io::{Error as IoError, ErrorKind, Result as IoResult, Write};
+use ::std::io::Write;
 
 // Field numbers from google/protobuf/compiler/plugin.proto
 const CODE_GENERATOR_REQUEST_PROTO_FILE_FIELD_NUMBER: u32 = 15;
@@ -41,11 +41,11 @@ pub struct CodeGeneratorRequest {
 
 impl CodeGeneratorRequest {
     /// Parse a CodeGeneratorRequest from bytes
-    pub fn from_bytes(bytes: &[u8]) -> IoResult<Self> {
+    pub fn from_bytes(bytes: &[u8]) -> protobuf_core::Result<Self> {
         let mut proto_file_count = 0;
 
         for field_result in bytes.read_protobuf_fields() {
-            let field = field_result.map_err(|e| IoError::new(ErrorKind::InvalidData, e))?;
+            let field = field_result?;
 
             if field.field_number.as_u32() == CODE_GENERATOR_REQUEST_PROTO_FILE_FIELD_NUMBER {
                 // Each Len field is one FileDescriptorProto (we don't parse it, just count)
@@ -85,7 +85,7 @@ pub struct CodeGeneratorResponse {
 
 impl CodeGeneratorResponse {
     /// Serialize the response to bytes
-    pub fn to_bytes(&self, writer: &mut impl Write) -> IoResult<usize> {
+    pub fn to_bytes(&self, writer: &mut impl Write) -> protobuf_core::Result<usize> {
         let mut total_bytes = 0;
 
         for file in &self.files {
@@ -98,9 +98,7 @@ impl CodeGeneratorResponse {
                     FieldNumber::try_from(FILE_NAME_FIELD_NUMBER).unwrap(),
                     FieldValue::from_string(file.name.clone()),
                 );
-                file_bytes
-                    .write_protobuf_field(&field)
-                    .map_err(|e| IoError::new(ErrorKind::InvalidData, e))?;
+                file_bytes.write_protobuf_field(&field)?;
             }
 
             // Write content field if present
@@ -109,9 +107,7 @@ impl CodeGeneratorResponse {
                     FieldNumber::try_from(FILE_CONTENT_FIELD_NUMBER).unwrap(),
                     FieldValue::from_string(file.content.clone()),
                 );
-                file_bytes
-                    .write_protobuf_field(&field)
-                    .map_err(|e| IoError::new(ErrorKind::InvalidData, e))?;
+                file_bytes.write_protobuf_field(&field)?;
             }
 
             // Write the file as a length-delimited field (field 15)
@@ -119,9 +115,7 @@ impl CodeGeneratorResponse {
                 FieldNumber::try_from(CODE_GENERATOR_RESPONSE_FILE_FIELD_NUMBER).unwrap(),
                 FieldValue::from_bytes(file_bytes),
             );
-            total_bytes += writer
-                .write_protobuf_field(&response_field)
-                .map_err(|e| IoError::new(ErrorKind::InvalidData, e))?;
+            total_bytes += writer.write_protobuf_field(&response_field)?;
         }
 
         Ok(total_bytes)
