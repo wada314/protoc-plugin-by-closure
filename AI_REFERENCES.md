@@ -149,16 +149,33 @@ No changes needed in the library code for protobuf-core integration.
 ## Next Actions for Migration
 
 ### Phase 1: Replace bin/src/main.rs with protobuf-core
-- [ ] 1. Add `protobuf-core = "0.1.0"` to dependencies in `bin/Cargo.toml`
-- [ ] 2. Add `use protobuf_core::{ReadExtProtobuf, FieldValue};` to `bin/src/main.rs`
-- [ ] 3. Remove `eat_variant_i64()` function (lines 19-40)
-- [ ] 4. Remove `eat_variant_i32()` function (lines 42-44)
-- [ ] 5. Remove local `Wire` enum definition (lines 47-68)
-- [ ] 6. Replace `find_last_string_field()` implementation with protobuf-core APIs
-- [ ] 7. Update error handling to work with `protobuf_core::ProtobufError`
-- [ ] 8. Run `cargo build --package protoc-plugin-bin` to verify compilation
-- [ ] 9. Run integration tests: `cargo test` to verify functionality
-- [ ] 10. Manual testing with actual protoc if needed
+- [x] 1. Add `protobuf-core = "0.1.0"` to dependencies in `bin/Cargo.toml`
+- [x] 2. Add `use protobuf_core::{ReadExtProtobuf, FieldValue};` to `bin/src/main.rs`
+- [x] 3. Remove `eat_variant_i64()` function (lines 19-40)
+- [x] 4. Remove `eat_variant_i32()` function (lines 42-44)
+- [x] 5. Remove local `Wire` enum definition (lines 47-68)
+- [x] 6. Replace `find_last_string_field()` implementation with protobuf-core APIs
+- [x] 7. Update error handling to work with `protobuf_core::ProtobufError`
+- [x] 8. Run `cargo build --package protoc-plugin-bin` to verify compilation
+- [x] 9. Run integration tests: `cargo test` to verify functionality
+- [x] 10. Manual testing with actual protoc if needed
+
+**Status**: ✅ **COMPLETED**
+
+**Summary of Changes**:
+- Replaced ~90 lines of manual protobuf parsing code with ~20 lines using protobuf-core APIs
+- Removed `eat_variant_i64()`, `eat_variant_i32()`, and local `Wire` enum
+- Simplified `find_last_string_field()` function significantly
+- Error handling now leverages `protobuf_core::ProtobufError` (wrapped in anyhow)
+- Build successful with no errors or warnings
+- Code is more maintainable and less error-prone
+
+**Key Benefits**:
+1. **Code reduction**: 90 lines → 20 lines (~78% reduction)
+2. **Maintainability**: No need to maintain manual varint/tag parsing logic
+3. **Reliability**: Using well-tested protobuf-core library
+4. **Error handling**: Better error messages from protobuf-core
+5. **Future-proof**: Automatically benefits from protobuf-core improvements
 
 ### Phase 2: Replace dev-dependencies in tests
 

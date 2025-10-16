@@ -12,100 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use ::anyhow::{anyhow, Result};
-use ::ipc_channel::ipc::{bytes_channel, IpcSender};
-use ::std::io::{stdin, stdout, Read, Write};
+use ::anyhow::{Result, anyhow};
+use ::ipc_channel::ipc::{IpcSender, bytes_channel};
+use ::protobuf_core::{FieldValue, ReadExtProtobuf};
+use ::std::io::{Read, Write, stdin, stdout};
 
-fn eat_variant_i64(input: &mut &[u8]) -> Result<i64> {
-    let mut result = 0i64;
-    for i in 0..9 {
-        let Some((byte, new_input)) = input.split_first() else {
-            return Err(anyhow!("unexpected EOF while parsing variant"));
-        };
-        *input = new_input;
-        if i != 8 {
-            result |= ((byte & 0x7F) as i64) << (i * 7);
-            if byte & 0x80 == 0 {
-                return Ok(result);
-            }
-        } else {
-            if byte & 0xFE != 0 {
-                return Err(anyhow!("variant is too long"));
-            }
-            result |= ((byte & 0x01) as i64) << (7 * 9);
-            return Ok(result);
-        }
-    }
-    unreachable!();
-}
+// Field number for CodeGeneratorRequest.parameter field
+// See: google/protobuf/compiler/plugin.proto in the Google Protobuf repository.
+const CODE_GENERATOR_REQUEST_PARAMETER_FIELD_NUMBER: u32 = 2;
 
-fn eat_variant_i32(input: &mut &[u8]) -> Result<i32> {
-    Ok(eat_variant_i64(input)?.try_into()?)
-}
-
-fn find_last_string_field(mut input: &[u8], target_field_number: i32) -> Result<Option<String>> {
-    enum Wire {
-        Varint,
-        I64,
-        Len,
-        SGroup,
-        EGroup,
-        I32,
-    }
-    impl TryFrom<i32> for Wire {
-        type Error = anyhow::Error;
-        fn try_from(value: i32) -> Result<Self> {
-            match value {
-                0 => Ok(Self::Varint),
-                1 => Ok(Self::I64),
-                2 => Ok(Self::Len),
-                3 => Ok(Self::SGroup),
-                4 => Ok(Self::EGroup),
-                5 => Ok(Self::I32),
-                _ => Err(anyhow!("invalid wire type")),
-            }
-        }
-    }
-
+fn find_last_string_field(input: &[u8], target_field_number: u32) -> Result<Option<String>> {
     let mut result: Option<String> = None;
-    while !input.is_empty() {
-        let tag = eat_variant_i32(&mut input)?;
-        let wire: Wire = (tag & 0x07).try_into()?;
-        let field_number = tag >> 3;
-        match wire {
-            Wire::Varint => {
-                eat_variant_i64(&mut input)?;
-            }
-            Wire::I64 => {
-                let Some((_, new_input)) = input.split_at_checked(8) else {
-                    return Err(anyhow!("unexpected EOF while parsing i64"));
-                };
-                input = new_input;
-            }
-            Wire::Len => {
-                let len = eat_variant_i32(&mut input)?;
-                let Some((payload, new_input)) = input.split_at_checked(len.try_into()?) else {
-                    return Err(anyhow!("unexpected EOF while parsing LEN tag payload"));
-                };
-                input = new_input;
-                if field_number == target_field_number {
-                    result = Some(String::from_utf8(payload.to_vec())?);
-                }
-            }
-            Wire::SGroup | Wire::EGroup => {
-                return Err(anyhow!(
-                    "{} does not support protobuf groups.",
-                    env!("CARGO_PKG_NAME")
-                ));
-            }
-            Wire::I32 => {
-                let Some((_, new_input)) = input.split_at_checked(4) else {
-                    return Err(anyhow!("unexpected EOF while parsing i32"));
-                };
-                input = new_input;
+
+    for field_result in input.read_protobuf_fields() {
+        let field = field_result.map_err(|e| anyhow!("Failed to parse protobuf field: {}", e))?;
+
+        // Extract string field if it matches the target field number
+        if field.field_number.as_u32() == target_field_number {
+            if let FieldValue::Len(bytes) = field.value {
+                result = Some(String::from_utf8(bytes)?);
             }
         }
     }
+
     Ok(result)
 }
 
@@ -113,7 +42,7 @@ fn main() -> Result<()> {
     let mut input_buffer = Vec::new();
     stdin().read_to_end(&mut input_buffer)?;
 
-    let ipc_init_key = find_last_string_field(&input_buffer, 2)?.ok_or_else(|| {
+    let ipc_init_key = find_last_string_field(&input_buffer, CODE_GENERATOR_REQUEST_PARAMETER_FIELD_NUMBER)?.ok_or_else(|| {
         anyhow!(
             "input CodeGeneratorRequest proto does not contain a parameter field (2) (IPC init key)."
         )

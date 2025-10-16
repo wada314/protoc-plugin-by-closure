@@ -190,11 +190,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "protobuf-core"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "561303d708116eba03385e00af948ea3842cf31be634c74d977d87334ba5813d"
+dependencies = [
+ "thiserror 1.0.69",
+]
+
+[[package]]
 name = "protoc-plugin-bin"
 version = "0.1.2"
 dependencies = [
  "anyhow",
  "ipc-channel",
+ "protobuf-core",
 ]
 
 [[package]]
