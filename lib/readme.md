@@ -51,6 +51,33 @@ your [Cargo workspace](https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.h
 bindeps = true
 ```
 
+## ⚠️ Known Issue: crates.io Dependencies
+
+**As of October 2024, bindeps appear not to work when this crate is used as a crates.io dependency.**
+
+We have confirmed that:
+- ✅ Local path dependencies work correctly
+- ✅ Git dependencies work correctly  
+- ❌ crates.io dependencies fail with `CARGO_BIN_FILE_PROTOC_PLUGIN_BIN` not defined error
+
+This issue may be related to [Cargo Issue #12555](https://github.com/rust-lang/cargo/issues/12555), which tracks crates.io support for bindeps, though the exact cause is not yet fully confirmed.
+
+**Workaround:** Use git or path dependencies instead:
+
+```toml
+[dependencies]
+# ✅ Works: Git dependency
+protoc-plugin-by-closure = { git = "https://github.com/wada314/protoc-plugin-by-closure" }
+
+# ✅ Works: Local path dependency
+protoc-plugin-by-closure = { path = "../protoc-plugin-by-closure/lib" }
+
+# ❌ Does NOT work: crates.io dependency
+# protoc-plugin-by-closure = "0.2"
+```
+
+This limitation will be resolved once crates.io adds support for bindeps.
+
 # Documentation
 Currently (Sep. 2025) because of docs.rs's limitation, you can't see the documentation of this crate on docs.rs. [issue thread](https://github.com/rust-lang/docs.rs/issues/2710)
 Please see the documentation on [GitHub Pages](https://wada314.github.io/protoc-plugin-by-closure/protoc_plugin_by_closure/index.html).
