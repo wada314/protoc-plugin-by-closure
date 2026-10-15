@@ -27,8 +27,10 @@ This project provides a way to use Google Protocol Buffer compiler (`protoc`) wi
 **protobuf-core capabilities used**:
 - Varint encoding/decoding
 - Tag operations
-- Field reading/writing utilities
+- Field reading/writing utilities (`ReadExtProtobuf` on `std::io::Read`; slices use `AsRefExtProtobuf::read_protobuf_fields` — same method name, zero-copy `Field<&[u8]>`)
 - Wire format constants and types
+
+**Version note:** this crate's manifests pin `protobuf-core = "0.1.0"` (crates.io). The puroro workspace submodule tracks git `protobuf-core` 0.2.x; do not assume the two are the same API without checking.
 
 **Related Resources**: 
 - `protobuf-core` crate: https://github.com/wada314/protobuf-core
