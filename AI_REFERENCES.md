@@ -1,8 +1,10 @@
 # AI References for protoc-plugin-by-closure Project
 
+Historical architecture notes. **Start with [`AGENTS.md`](AGENTS.md)** (the agent entry point).
+
 ## Summary
 
-This document serves as a comprehensive reference for AI agents and developers working on the protoc-plugin-by-closure project. It documents key architectural decisions, implementation details, and design rationale.
+This document records key architectural decisions, implementation details, and design rationale.
 
 ## Project Overview
 This project provides a way to use Google Protocol Buffer compiler (`protoc`) with closure code in Rust. It implements a protoc plugin system that allows custom code generation through user-defined closures.
