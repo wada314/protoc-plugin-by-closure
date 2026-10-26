@@ -71,8 +71,8 @@ pub type Result<T> = ::std::result::Result<T, ErrorKind>;
 ///
 ///     // The generated file names depend on your plugin logic and the contents of
 ///     // the input proto files, but typically they will be like this:
-///     assert!(std::path::Path("path/to/my/output_dir/my_protobuf_file.rs").exists());
-///     assert!(std::path::Path("path/to/my/output_dir/my_protobuf_file2.rs").exists());
+///     assert!(std::path::Path::new("path/to/my/output_dir/my_protobuf_file.rs").exists());
+///     assert!(std::path::Path::new("path/to/my/output_dir/my_protobuf_file2.rs").exists());
 /// # }
 /// ```
 pub struct Protoc {

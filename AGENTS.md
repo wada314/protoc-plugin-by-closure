@@ -22,6 +22,8 @@ Nightly + Cargo `-Z bindeps` (artifact dependency on the plugin binary). This re
 bindeps = true
 ```
 
+**Do not recommend a crates.io version-only dependency.** crates.io still omits bindeps/`artifact` metadata from the index ([Cargo #12555](https://github.com/rust-lang/cargo/issues/12555)), so consumers hit `CARGO_BIN_FILE_PROTOC_PLUGIN_BIN` not defined. Tell users to use `git` or `path` (see `lib/readme.md` § Install).
+
 CI uses `cargo +nightly test` and installs `protoc` (see `.github/workflows/rust.yml`).
 
 ## Build, test, lint
