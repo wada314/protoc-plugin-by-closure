@@ -167,9 +167,9 @@ dependencies = [
 
 [[package]]
 name = "protobuf-core"
-version = "0.1.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "561303d708116eba03385e00af948ea3842cf31be634c74d977d87334ba5813d"
+checksum = "5009a3b20e33dc890f328d4a7ef2a094a652cae8c69e194686f5f7885a9fead3"
 dependencies = [
  "thiserror 1.0.69",
 ]

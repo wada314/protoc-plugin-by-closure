@@ -32,12 +32,12 @@ This project provides a way to use Google Protocol Buffer compiler (`protoc`) wi
 - Field reading/writing utilities (`ReadExtProtobuf` on `std::io::Read`; slices use `AsRefExtProtobuf::read_protobuf_fields` — same method name, zero-copy `Field<&[u8]>`)
 - Wire format constants and types
 
-**Version note:** this crate's manifests pin `protobuf-core = "0.1.0"` (crates.io). The puroro workspace submodule tracks git `protobuf-core` 0.2.x; do not assume the two are the same API without checking.
+**Version note:** this crate's manifests pin `protobuf-core = "0.6.0"` (crates.io). The puroro workspace submodule tracks git `protobuf-core` separately; do not assume the two are the same API without checking.
 
 **Related Resources**: 
 - `protobuf-core` crate: https://github.com/wada314/protobuf-core
 - Documentation: https://docs.rs/protobuf-core/
-- Version used: 0.1.0
+- Version used: 0.6.0
 
 ## Project Structure
 
@@ -87,7 +87,7 @@ fn find_last_string_field(input: &[u8], target_field_number: u32) -> Result<Opti
         let field = field_result?;
         if field.field_number.as_u32() == target_field_number {
             if let FieldValue::Len(bytes) = field.value {
-                result = Some(String::from_utf8(bytes)?);
+                result = Some(std::str::from_utf8(bytes)?.to_owned());
             }
         }
     }
@@ -164,18 +164,18 @@ for field_result in input.read_protobuf_fields() {
 
 **Extending test helper with new message types**:
 - Add message structs to `lib/tests/compiler_plugin/mod.rs`
-- Implement parsing with `ReadExtProtobuf::read_protobuf_fields()`
+- Implement parsing with `AsRefExtProtobuf::read_protobuf_fields()` on slices
 - Implement serialization with `WriteExtProtobuf::write_protobuf_field()`
 - Return `protobuf_core::Result` for consistency
 
 ### Dependencies
 
 **Production dependencies**:
-- `protobuf-core = "0.1.0"` (in `bin/Cargo.toml` only)
+- `protobuf-core = "0.6.0"` (in `bin/Cargo.toml` only)
 - Keep this minimal - no full protobuf libraries
 
 **Dev dependencies**:
-- `protobuf-core = "0.1.0"` (in `lib/Cargo.toml`)
+- `protobuf-core = "0.6.0"` (in `lib/Cargo.toml`)
 - Used only for test helpers
 
 ### Testing

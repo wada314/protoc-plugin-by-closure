@@ -14,7 +14,7 @@
 
 use ::anyhow::{Result, anyhow};
 use ::ipc_channel::ipc::{IpcSender, bytes_channel};
-use ::protobuf_core::{FieldValue, ReadExtProtobuf};
+use ::protobuf_core::{AsRefExtProtobuf, FieldValue};
 use ::std::io::{Read, Write, stdin, stdout};
 
 // Field number for CodeGeneratorRequest.parameter field
@@ -33,7 +33,7 @@ fn find_last_string_field(input: &[u8], target_field_number: u32) -> Result<Opti
         // Extract string field if it matches the target field number
         if field.field_number.as_u32() == target_field_number {
             if let FieldValue::Len(bytes) = field.value {
-                result = Some(String::from_utf8(bytes)?);
+                result = Some(std::str::from_utf8(bytes)?.to_owned());
             }
         }
     }
