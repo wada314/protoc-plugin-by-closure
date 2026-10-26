@@ -46,7 +46,7 @@ protoc-plugin-by-closure = { path = "../protoc-plugin-by-closure/lib" }
 |---|---|
 | git (snippet above) | Yes |
 | `{ path = "…/lib" }` | Yes |
-| `"0.2.1"` (crates.io) | No — missing `CARGO_BIN_FILE_PROTOC_PLUGIN_BIN` |
+| `"0.2.2"` (crates.io) | No — missing `CARGO_BIN_FILE_PROTOC_PLUGIN_BIN` |
 
 # Requirements
 
