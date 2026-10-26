@@ -37,7 +37,7 @@ cargo +nightly clippy --all-targets
 ## Constraints
 
 - Keep protobuf parsing on `protobuf-core` only. Do not add `prost`, `protobuf`, or similar.
-- Manifests pin `protobuf-core = "0.1.0"` (crates.io). That is not the puroro workspace git submodule (0.2.x); do not bump casually.
+- Manifests pin `protobuf-core = "0.6.0"` (crates.io). That is not the puroro workspace git submodule; do not bump casually.
 - Slice parsing uses `AsRefExtProtobuf::read_protobuf_fields` (zero-copy `Field<&[u8]>`). `ReadExtProtobuf` is for `std::io::Read`.
 - `bin/` is an implementation detail of the IPC helper.
 

@@ -25,7 +25,7 @@
 //! to minimize dependencies. The test helper only implements the minimal fields needed
 //! for testing (CodeGeneratorRequest.proto_file count, CodeGeneratorResponse.file list).
 
-use ::protobuf_core::{Field, FieldNumber, FieldValue, ReadExtProtobuf, WriteExtProtobuf};
+use ::protobuf_core::{AsRefExtProtobuf, Field, FieldNumber, FieldValue, WriteExtProtobuf};
 use ::std::io::Write;
 
 // Field numbers from google/protobuf/compiler/plugin.proto
@@ -102,7 +102,7 @@ impl CodeGeneratorResponse {
             if !file.name.is_empty() {
                 let field = Field::new(
                     FieldNumber::try_from(FILE_NAME_FIELD_NUMBER).unwrap(),
-                    FieldValue::from_string(file.name.clone()),
+                    FieldValue::Len(file.name.as_bytes()),
                 );
                 file_bytes.write_protobuf_field(&field)?;
             }
@@ -111,7 +111,7 @@ impl CodeGeneratorResponse {
             if !file.content.is_empty() {
                 let field = Field::new(
                     FieldNumber::try_from(FILE_CONTENT_FIELD_NUMBER).unwrap(),
-                    FieldValue::from_string(file.content.clone()),
+                    FieldValue::Len(file.content.as_bytes()),
                 );
                 file_bytes.write_protobuf_field(&field)?;
             }
@@ -119,7 +119,7 @@ impl CodeGeneratorResponse {
             // Write the file as a length-delimited field (field 15)
             let response_field = Field::new(
                 FieldNumber::try_from(CODE_GENERATOR_RESPONSE_FILE_FIELD_NUMBER).unwrap(),
-                FieldValue::from_bytes(file_bytes),
+                FieldValue::Len(file_bytes),
             );
             total_bytes += writer.write_protobuf_field(&response_field)?;
         }
