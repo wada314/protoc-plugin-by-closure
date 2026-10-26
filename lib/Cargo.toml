@@ -6,6 +6,7 @@ description = "Use Google Protocol Buffer compiler (`protoc`) with your closure 
 license = "Apache-2.0"
 repository = "https://github.com/wada314/protoc-plugin-by-closure"
 documentation = "https://wada314.github.io/protoc-plugin-by-closure/protoc_plugin_by_closure/index.html"
+readme = "readme.md"
 
 [lib]
 doctest = false
