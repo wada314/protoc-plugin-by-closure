@@ -13,41 +13,44 @@ This crate ships an internal plugin binary through Cargo's unstable [`bindeps`](
 error: environment variable `CARGO_BIN_FILE_PROTOC_PLUGIN_BIN` not defined at compile time
 ```
 
-Use a **git** or **path** dependency instead (and still follow [Requirements](#requirements)):
+Copy the two snippets below into **your** project (not this repo). Use Nightly Cargo (`rustup default nightly` or `cargo +nightly …`). `protoc` must be on `PATH` when you run the wrapper.
+
+**1. `Cargo.toml`**
 
 ```toml
 [dependencies]
-# Works: git
 protoc-plugin-by-closure = { git = "https://github.com/wada314/protoc-plugin-by-closure" }
-
-# Works: path to this repo's library crate (`lib/`)
-# protoc-plugin-by-closure = { path = "../protoc-plugin-by-closure/lib" }
-
-# Does NOT work: crates.io / version-only dependency
-# protoc-plugin-by-closure = "0.2.1"
 ```
 
-| Dependency | Builds? |
-|---|---|
-| `{ git = "…" }` | Yes |
-| `{ path = "…/lib" }` | Yes |
-| `"0.2.1"` (crates.io) | No — missing `CARGO_BIN_FILE_PROTOC_PLUGIN_BIN` |
-
-# Requirements
-
-1. **Nightly** Rust / Cargo.
-2. **`bindeps` enabled** for the crate that depends on this library (and for any [Cargo workspace](https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html) root that contains it).
-
-This repository already has a [.cargo/config.toml](.cargo/config.toml) that sets:
+**2. `.cargo/config.toml`** (project or [workspace](https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html) root — see [Cargo config](https://doc.rust-lang.org/cargo/reference/config.html))
 
 ```toml
 [unstable]
 bindeps = true
 ```
 
-That file applies only inside this repo. If you depend on this crate from **another** project or workspace, create the same `.cargo/config.toml` under **that** project's workspace root (see [Cargo config](https://doc.rust-lang.org/cargo/reference/config.html)). You can also pass `-Z bindeps` on the command line.
+Without that config file you can instead pass `-Z bindeps` on every Cargo command.
 
-`protoc` must be on `PATH` when you actually run the wrapper.
+### Alternatives
+
+Local checkout of this repo (the library crate lives in `lib/`):
+
+```toml
+[dependencies]
+protoc-plugin-by-closure = { path = "../protoc-plugin-by-closure/lib" }
+```
+
+(You still need the same `.cargo/config.toml` / `-Z bindeps` and Nightly.)
+
+| Dependency | Builds? |
+|---|---|
+| git (snippet above) | Yes |
+| `{ path = "…/lib" }` | Yes |
+| `"0.2.1"` (crates.io) | No — missing `CARGO_BIN_FILE_PROTOC_PLUGIN_BIN` |
+
+# Requirements
+
+Same as the Install snippets: **Nightly**, **`bindeps`** enabled for the depending project, and **`protoc` on `PATH`** at runtime. This repository's own [.cargo/config.toml](.cargo/config.toml) only covers builds inside this repo.
 
 # Example
 
