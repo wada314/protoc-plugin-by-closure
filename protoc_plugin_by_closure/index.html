@@ -1,6 +1,30 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="A library for running protoc command with your own plugin code as a closure."><title>protoc_plugin_by_closure - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="protoc_plugin_by_closure" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (76456a688 2026-10-25)" data-channel="nightly" data-search-js="search-b167f383.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../static.files/storage-41dd4d93.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc mod crate"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Crate protoc_plugin_by_closure</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../protoc_plugin_by_closure/index.html">protoc_<wbr>plugin_<wbr>by_<wbr>closure</a><span class="version">0.2.1</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#example" title="Example">Example</a></li><li><a href="#how-it-works" title="How it works">How it works</a></li><li><a href="#features" title="Features">Features</a></li><li><a href="#requirements" title="Requirements">Requirements</a><ul><li><a href="#-known-issue-cratesio-dependencies" title="⚠️ Known Issue: crates.io Dependencies">⚠️ Known Issue: crates.io Dependencies</a></li></ul></li><li><a href="#documentation" title="Documentation">Documentation</a></li></ul><h3><a href="#structs">Crate Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#enums" title="Enums">Enums</a></li><li><a href="#types" title="Type Aliases">Type Aliases</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1>Crate <span>protoc_<wbr>plugin_<wbr>by_<wbr>closure</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/protoc_plugin_by_closure/lib.rs.html#15-321">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A library for running protoc command with your own plugin code as a closure.</p>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="A library for running protoc command with your own plugin code as a closure."><title>protoc_plugin_by_closure - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-009149e2.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="protoc_plugin_by_closure" data-themes="" data-resource-suffix="" data-rustdoc-version="1.101.0-nightly (76456a688 2026-10-25)" data-channel="nightly" data-search-js="search-b167f383.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../static.files/storage-41dd4d93.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc mod crate"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Crate protoc_plugin_by_closure</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../protoc_plugin_by_closure/index.html">protoc_<wbr>plugin_<wbr>by_<wbr>closure</a><span class="version">0.2.1</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#install" title="Install">Install</a><ul><li><a href="#alternatives" title="Alternatives">Alternatives</a></li></ul></li><li><a href="#requirements" title="Requirements">Requirements</a></li><li><a href="#example" title="Example">Example</a></li><li><a href="#how-it-works" title="How it works">How it works</a></li><li><a href="#features" title="Features">Features</a></li><li><a href="#documentation" title="Documentation">Documentation</a></li></ul><h3><a href="#structs">Crate Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#enums" title="Enums">Enums</a></li><li><a href="#types" title="Type Aliases">Type Aliases</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1>Crate <span>protoc_<wbr>plugin_<wbr>by_<wbr>closure</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/protoc_plugin_by_closure/lib.rs.html#15-321">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A library for running protoc command with your own plugin code as a closure.</p>
 <p>When you develop your own protoc compiler plugin, normally you need to compile your code as an executable binary and run <code>protoc</code> command by yourself with passing the path to the binary.
 This crate provides a convenient replacement for that process: You just need to pass your code as a closure to this library, then it will run the <code>protoc</code> command as like as your closure is an executable binary.</p>
+<h2 id="install"><a class="doc-anchor" href="#install">§</a>Install</h2>
+<p><strong>Do not use a crates.io version number as the dependency.</strong> That build fails today.</p>
+<p>This crate ships an internal plugin binary through Cargo’s unstable <a href="https://rust-lang.github.io/rfcs/3028-cargo-binary-dependencies.html"><code>bindeps</code></a> (artifact dependency). crates.io does not yet store that metadata in the index (<a href="https://github.com/rust-lang/cargo/issues/12555">Cargo #12555</a>), so a registry dependency never builds <code>protoc-plugin-bin</code> and compiling this crate fails with:</p>
+<div class="example-wrap"><pre class="language-text"><code>error: environment variable `CARGO_BIN_FILE_PROTOC_PLUGIN_BIN` not defined at compile time</code></pre></div>
+<p>Copy the two snippets below into <strong>your</strong> project (not this repo). Use Nightly Cargo (<code>rustup default nightly</code> or <code>cargo +nightly …</code>). <code>protoc</code> must be on <code>PATH</code> when you run the wrapper.</p>
+<p><strong>1. <code>Cargo.toml</code></strong></p>
+<div class="example-wrap"><pre class="language-toml"><code>[dependencies]
+protoc-plugin-by-closure = { git = &quot;https://github.com/wada314/protoc-plugin-by-closure&quot; }</code></pre></div>
+<p><strong>2. <code>.cargo/config.toml</code></strong> (project or <a href="https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html">workspace</a> root — see <a href="https://doc.rust-lang.org/cargo/reference/config.html">Cargo config</a>)</p>
+<div class="example-wrap"><pre class="language-toml"><code>[unstable]
+bindeps = true</code></pre></div>
+<p>Without that config file you can instead pass <code>-Z bindeps</code> on every Cargo command.</p>
+<h4 id="alternatives"><a class="doc-anchor" href="#alternatives">§</a>Alternatives</h4>
+<p>Local checkout of this repo (the library crate lives in <code>lib/</code>):</p>
+<div class="example-wrap"><pre class="language-toml"><code>[dependencies]
+protoc-plugin-by-closure = { path = &quot;../protoc-plugin-by-closure/lib&quot; }</code></pre></div>
+<p>(You still need the same <code>.cargo/config.toml</code> / <code>-Z bindeps</code> and Nightly.)</p>
+<div class="table"><table><thead><tr><th>Dependency</th><th>Builds?</th></tr></thead><tbody>
+<tr><td>git (snippet above)</td><td>Yes</td></tr>
+<tr><td><code>{ path = "…/lib" }</code></td><td>Yes</td></tr>
+<tr><td><code>"0.2.1"</code> (crates.io)</td><td>No — missing <code>CARGO_BIN_FILE_PROTOC_PLUGIN_BIN</code></td></tr>
+</tbody></table>
+</div><h2 id="requirements"><a class="doc-anchor" href="#requirements">§</a>Requirements</h2>
+<p>Same as the Install snippets: <strong>Nightly</strong>, <strong><code>bindeps</code></strong> enabled for the depending project, and <strong><code>protoc</code> on <code>PATH</code></strong> at runtime. This repository’s own <a href=".cargo/config.toml">.cargo/config.toml</a> only covers builds inside this repo.</p>
 <h2 id="example"><a class="doc-anchor" href="#example">§</a>Example</h2>
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>protoc_plugin_by_closure::Protoc;
 <span class="kw">use </span>std::time::Duration;
@@ -10,7 +34,7 @@ Protoc::new()
     .proto_file(<span class="string">"my_protobuf_file2.proto"</span>)
     .proto_path(<span class="string">"path/to/my/input_proto_dir/"</span>)
     .out_dir(<span class="string">"path/to/my/output_dir/"</span>)
-    .run(Duration::from_sec(<span class="number">3</span>), |request_bytes| {
+    .run(Duration::from_secs(<span class="number">3</span>), |request_bytes| {
         <span class="comment">// Your plugin logic here, which takes the CodeGeneratorRequest bytes
         // and returns the Result of CodeGeneratorResponse bytes.
     </span>})
@@ -18,8 +42,8 @@ Protoc::new()
 
 <span class="comment">// The generated file names depend on your plugin logic and the contents of
 // the input proto files, but typically they will be like this:
-</span><span class="macro">assert!</span>(std::path::Path(<span class="string">"path/to/my/output_dir/my_protobuf_file.rs"</span>).exists());
-<span class="macro">assert!</span>(std::path::Path(<span class="string">"path/to/my/output_dir/my_protobuf_file2.rs"</span>).exists());</code></pre></div><h2 id="how-it-works"><a class="doc-anchor" href="#how-it-works">§</a>How it works</h2>
+</span><span class="macro">assert!</span>(std::path::Path::new(<span class="string">"path/to/my/output_dir/my_protobuf_file.rs"</span>).exists());
+<span class="macro">assert!</span>(std::path::Path::new(<span class="string">"path/to/my/output_dir/my_protobuf_file2.rs"</span>).exists());</code></pre></div><h2 id="how-it-works"><a class="doc-anchor" href="#how-it-works">§</a>How it works</h2>
 <p>This crate is using the <code>ipc-channel</code> crate for the communication between the internal plugin binary and your closure code.
 When running the <code>protoc</code> command, this crate generates an one-time key for the IPC channel, and pass it to the internal plugin binary as a <code>protoc</code> argument.
 The internal plugin binary then creates the IPC channel with the key, and sends the whole input <code>CodeGeneratorRequest</code> bytes back to the caller process.
@@ -29,32 +53,6 @@ The generated <code>CodeGeneratorResponse</code> bytes are sent back to the inte
 <li><code>on-memory</code>: Enabled by default.
 Provides <a href="struct.ProtocOnMemory.html" title="struct protoc_plugin_by_closure::ProtocOnMemory"><code>ProtocOnMemory</code></a> struct which makes you to run the <code>protoc</code> command without touching the actual filesystem. Because this feature is using the <code>tempfile</code> crate, you can disable it if you don’t need it.</li>
 </ul>
-<h2 id="requirements"><a class="doc-anchor" href="#requirements">§</a>Requirements</h2>
-<p>Nightly channel required.</p>
-<p>This crate requires an unstable (as of 2024/06) <a href="https://rust-lang.github.io/rfcs/3028-cargo-binary-dependencies.html">cargo feature <code>bindeps</code></a>.
-This crate contains <a href=".cargo/config.toml">.cargo/config.toml</a> file which enables this feature so you normally don’t need to worry about it, but if you include this crate as a part of
-your <a href="https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html">Cargo workspace</a>, then you need to create the <code>.cargo/config.toml</code> file with the following contents <em>under your cargo workspace directory</em> manually (see <a href="https://doc.rust-lang.org/cargo/reference/config.html">the official document</a> for the reasons):</p>
-<div class="example-wrap"><pre class="language-toml"><code>[unstable]
-bindeps = true</code></pre></div><h3 id="-known-issue-cratesio-dependencies"><a class="doc-anchor" href="#-known-issue-cratesio-dependencies">§</a>⚠️ Known Issue: crates.io Dependencies</h3>
-<p><strong>As of October 2024, bindeps appear not to work when this crate is used as a crates.io dependency.</strong></p>
-<p>We have confirmed that:</p>
-<ul>
-<li>✅ Local path dependencies work correctly</li>
-<li>✅ Git dependencies work correctly</li>
-<li>❌ crates.io dependencies fail with <code>CARGO_BIN_FILE_PROTOC_PLUGIN_BIN</code> not defined error</li>
-</ul>
-<p>This issue may be related to <a href="https://github.com/rust-lang/cargo/issues/12555">Cargo Issue #12555</a>, which tracks crates.io support for bindeps, though the exact cause is not yet fully confirmed.</p>
-<p><strong>Workaround:</strong> Use git or path dependencies instead:</p>
-<div class="example-wrap"><pre class="language-toml"><code>[dependencies]
-# ✅ Works: Git dependency
-protoc-plugin-by-closure = { git = &quot;https://github.com/wada314/protoc-plugin-by-closure&quot; }
-
-# ✅ Works: Local path dependency
-protoc-plugin-by-closure = { path = &quot;../protoc-plugin-by-closure/lib&quot; }
-
-# ❌ Does NOT work: crates.io dependency
-# protoc-plugin-by-closure = &quot;0.2&quot;</code></pre></div>
-<p>This limitation will be resolved once crates.io adds support for bindeps.</p>
 <h2 id="documentation"><a class="doc-anchor" href="#documentation">§</a>Documentation</h2>
 <p>Currently (Sep. 2025) because of docs.rs’s limitation, you can’t see the documentation of this crate on docs.rs. <a href="https://github.com/rust-lang/docs.rs/issues/2710">issue thread</a>
 Please see the documentation on <a href="https://wada314.github.io/protoc-plugin-by-closure/protoc_plugin_by_closure/index.html">GitHub Pages</a>.</p>
