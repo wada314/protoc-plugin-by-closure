@@ -32,9 +32,10 @@ CI uses `cargo +nightly test` and installs `protoc` (see `.github/workflows/rust
 cargo +nightly test
 cargo +nightly fmt
 cargo +nightly clippy --all-targets
+RUSTDOCFLAGS='-D warnings' cargo +nightly doc --no-deps --workspace
 ```
 
-`protoc` must be on `PATH` for the tests that invoke the compiler.
+`protoc` must be on `PATH` for the tests that invoke the compiler. Prefer protoc ≥ 32.1 when exercising edition 2024 inputs. `cargo test` also runs rustdoc examples (doctests). CI: `.github/workflows/rust.yml`.
 
 ## Constraints
 

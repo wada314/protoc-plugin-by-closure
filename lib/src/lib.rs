@@ -82,6 +82,12 @@ pub struct Protoc {
     proto_paths: Vec<PathBuf>,
 }
 
+impl Default for Protoc {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Protoc {
     /// Creates a new `Protoc` instance.
     pub fn new() -> Self {
@@ -168,7 +174,7 @@ impl Protoc {
                 ipc_init_server.accept()?.1;
 
             let req = req_recv.recv()?;
-            let res = (body)(&req).map_err(|x| ErrorKind::CallbackError(x))?;
+            let res = (body)(&req).map_err(ErrorKind::CallbackError)?;
 
             res_send.send(&res)?;
         }
@@ -230,6 +236,12 @@ pub struct ProtocOnMemory {
     in_files: Vec<(String, String)>,
 }
 
+impl Default for ProtocOnMemory {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ProtocOnMemory {
     /// Creates a new `ProtocOnMemory` instance.
     pub fn new() -> Self {
@@ -277,8 +289,8 @@ impl ProtocOnMemory {
 
         // write the proto files to the temp dir.
         for (name, content) in &self.in_files {
-            let path = proto_dir.path().join(&name);
-            ::std::fs::write(&path, &content)?;
+            let path = proto_dir.path().join(name);
+            ::std::fs::write(&path, content)?;
         }
 
         // run the protoc
