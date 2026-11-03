@@ -2,32 +2,40 @@ name: Rust
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
     paths-ignore:
       - 'target/doc/**'
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Install protoc
-      run: |
-        PROTOC_ZIP=protoc-24.4-linux-x86_64.zip
-        curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v24.4/$PROTOC_ZIP
-        sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
-        sudo unzip -o $PROTOC_ZIP -d /usr/local 'include/*'
-        rm -f $PROTOC_ZIP
-
-    - name: Build
-      run: cargo +nightly build --verbose
-    - name: Run tests
-      run: cargo +nightly test --verbose
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt, clippy
+      - name: Install protoc
+        run: |
+          PROTOC_VER=32.1
+          PROTOC_ZIP=protoc-${PROTOC_VER}-linux-x86_64.zip
+          curl -fsSL -o "$PROTOC_ZIP" \
+            "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VER}/$PROTOC_ZIP"
+          sudo unzip -o "$PROTOC_ZIP" -d /usr/local bin/protoc
+          sudo unzip -o "$PROTOC_ZIP" -d /usr/local 'include/*'
+          rm -f "$PROTOC_ZIP"
+          protoc --version
+      - name: Format
+        run: cargo +nightly fmt --all -- --check
+      - name: Clippy
+        run: cargo +nightly clippy --locked --all-targets -- -D warnings
+      - name: Test (includes doctests)
+        run: cargo +nightly test --locked
+      - name: Docs
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo +nightly doc --locked --no-deps --workspace

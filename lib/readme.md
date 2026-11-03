@@ -85,7 +85,7 @@ The generated `CodeGeneratorResponse` bytes are sent back to the internal plugin
 # Features
 
 - `on-memory`: Enabled by default.
-Provides [`ProtocOnMemory`] struct which makes you to run the `protoc` command without touching the actual filesystem. Because this feature is using the `tempfile` crate, you can disable it if you don't need it.
+  Provides [`ProtocOnMemory`] struct which makes you to run the `protoc` command without touching the actual filesystem. Because this feature is using the `tempfile` crate, you can disable it if you don't need it.
 
 # Documentation
 

@@ -31,10 +31,10 @@ fn find_last_string_field(input: &[u8], target_field_number: u32) -> Result<Opti
         let field = field_result.map_err(|e| anyhow!("Failed to parse protobuf field: {}", e))?;
 
         // Extract string field if it matches the target field number
-        if field.field_number.as_u32() == target_field_number {
-            if let FieldValue::Len(bytes) = field.value {
-                result = Some(std::str::from_utf8(bytes)?.to_owned());
-            }
+        if field.field_number.as_u32() == target_field_number
+            && let FieldValue::Len(bytes) = field.value
+        {
+            result = Some(std::str::from_utf8(bytes)?.to_owned());
         }
     }
 
