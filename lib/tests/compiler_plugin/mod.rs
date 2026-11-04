@@ -23,7 +23,7 @@
 //!
 //! This crate uses `protobuf-core` instead of full protobuf libraries (prost, protobuf, etc.)
 //! to minimize dependencies. The test helper only implements the minimal fields needed
-//! for testing (CodeGeneratorRequest.proto_file count, CodeGeneratorResponse.file list).
+//! for testing (`CodeGeneratorRequest.proto_file` count, `CodeGeneratorResponse.file` list).
 
 use ::protobuf_core::{AsRefExtProtobuf, Field, FieldNumber, FieldValue, WriteExtProtobuf};
 use ::std::io::Write;
@@ -37,16 +37,16 @@ const FILE_CONTENT_FIELD_NUMBER: u32 = 15;
 /// Minimal implementation of google.protobuf.compiler.CodeGeneratorRequest
 ///
 /// This only implements the fields needed for testing:
-/// - proto_file (field 15): The FileDescriptorProto messages
+/// - `proto_file` (field 15): The `FileDescriptorProto` messages
 #[derive(Debug, Default)]
 pub struct CodeGeneratorRequest {
-    /// Repeated FileDescriptorProto proto_file = 15;
-    /// For testing, we just count them, not parse the full FileDescriptorProto
+    /// Repeated `FileDescriptorProto` `proto_file` = 15;
+    /// For testing, we just count them, not parse the full `FileDescriptorProto`
     pub proto_file_count: usize,
 }
 
 impl CodeGeneratorRequest {
-    /// Parse a CodeGeneratorRequest from bytes
+    /// Parse a `CodeGeneratorRequest` from bytes
     pub fn from_bytes(bytes: &[u8]) -> protobuf_core::Result<Self> {
         let mut proto_file_count = 0;
 

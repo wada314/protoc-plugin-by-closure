@@ -28,3 +28,6 @@ on-memory = ["tempfile"]
 
 [package.metadata.docs.rs]
 cargo-args = ["-Zbindeps"]
+
+[lints]
+workspace = true
