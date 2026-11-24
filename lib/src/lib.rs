@@ -208,7 +208,7 @@ impl Protoc {
 /// use protoc_plugin_by_closure::ProtocOnMemory;
 /// use std::time::Duration;
 ///
-/// // Encodes a CodeGeneratorResponse with one File { name, content }.
+/// // Encodes CodeGeneratorResponse { file: [File { name, content }] }.
 /// fn encode_one_file(name: &str, content: &str) -> Vec<u8> {
 ///     // ...
 /// #     use protobuf_core::{Field, FieldNumber, FieldValue, WriteExtProtobuf};
