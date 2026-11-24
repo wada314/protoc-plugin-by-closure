@@ -12,27 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#![cfg(feature = "on-memory")]
+
 mod compiler_plugin;
 
 use ::protoc_plugin_by_closure::ProtocOnMemory;
 use ::std::time::Duration;
 
-use self::compiler_plugin::{CodeGeneratorRequest, CodeGeneratorResponse, File};
+use self::compiler_plugin::{
+    CodeGeneratorRequest, assert_one_proto_file_and_respond, response_with_files,
+};
 
 #[test]
 fn test_on_memory() {
     let out_file_name = "empty_test.rs";
     let out_file_content = "This\nis\na\ntest";
-    let proto_file_name = "empty_input.rs";
-    let proto_file_content = "
-syntax = \"proto3\";
+    let proto_file_name = "empty.proto";
+    let proto_file_content = r#"
+syntax = "proto3";
 package empty;
-    ";
+"#;
 
     let result_files = ProtocOnMemory::new()
         .add_file(proto_file_name, proto_file_content)
         .run(Duration::from_secs(3), |req| {
-            Ok(test_call_wrapper_inner(
+            Ok(assert_one_proto_file_and_respond(
                 req,
                 out_file_name,
                 out_file_content,
@@ -46,25 +50,38 @@ package empty;
     assert_eq!(result_content, out_file_content);
 }
 
-fn test_call_wrapper_inner(
-    req_bytes: &[u8],
-    out_file_name: &str,
-    out_file_content: &str,
-) -> Vec<u8> {
-    let req = CodeGeneratorRequest::from_bytes(req_bytes).unwrap();
-    // Check that we received one proto file
-    assert_eq!(req.proto_file_count, 1);
+/// `ProtocOnMemory`-specific: nested virtual input paths + multi-file round-trip.
+#[test]
+fn on_memory_nested_path_and_multi_file() {
+    let results = ProtocOnMemory::new()
+        .add_file(
+            "dir/a.proto",
+            r#"
+syntax = "proto3";
+package a;
+"#,
+        )
+        .add_file(
+            "dir/b.proto",
+            r#"
+syntax = "proto3";
+package b;
+"#,
+        )
+        .run(Duration::from_secs(3), |req| {
+            let parsed = CodeGeneratorRequest::from_bytes(req).unwrap();
+            assert_eq!(parsed.proto_file_count, 2);
+            // Flat output names: `ProtocOnMemory` collects only the out_dir top level.
+            Ok(response_with_files(&[("a.rs", "A"), ("b.rs", "B")]))
+        })
+        .unwrap();
 
-    // Create response with one file
-    let file = File {
-        name: out_file_name.to_string(),
-        content: out_file_content.to_string(),
-    };
-
-    let mut res = CodeGeneratorResponse::default();
-    res.files.push(file);
-
-    let mut res_bytes = Vec::new();
-    res.to_bytes(&mut res_bytes).unwrap();
-    res_bytes
+    assert_eq!(results.len(), 2);
+    // read_dir order is not guaranteed
+    let mut sorted = results;
+    sorted.sort_by(|a, b| a.0.cmp(&b.0));
+    assert_eq!(
+        sorted,
+        vec![("a.rs".into(), "A".into()), ("b.rs".into(), "B".into()),]
+    );
 }

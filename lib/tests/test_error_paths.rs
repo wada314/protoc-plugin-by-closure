@@ -14,7 +14,6 @@
 
 //! Negative-path coverage for [`protoc_plugin_by_closure::ErrorKind`].
 
-#[allow(dead_code)] // Shared helper also defines request parsing used by other tests.
 mod compiler_plugin;
 
 use ::protoc_plugin_by_closure::{ErrorKind, Protoc};
@@ -22,7 +21,7 @@ use ::std::io::Write;
 use ::std::time::Duration;
 use ::tempfile::{NamedTempFile, tempdir};
 
-use self::compiler_plugin::{CodeGeneratorResponse, File};
+use self::compiler_plugin::response_with_one_file;
 
 #[test]
 fn callback_error_is_returned() {
@@ -76,15 +75,7 @@ package empty;
         .proto_file(proto_file.path().to_str().unwrap())
         .proto_path(proto_dir.path().to_str().unwrap())
         .run(Duration::from_secs(3), |_req| {
-            let file = File {
-                name: "out.rs".into(),
-                content: "x".into(),
-            };
-            let mut res = CodeGeneratorResponse::default();
-            res.files.push(file);
-            let mut res_bytes = Vec::new();
-            res.to_bytes(&mut res_bytes).unwrap();
-            Ok(res_bytes)
+            Ok(response_with_one_file("out.rs", "x"))
         })
         .unwrap_err();
 

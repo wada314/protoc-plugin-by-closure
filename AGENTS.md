@@ -35,7 +35,7 @@ cargo +nightly clippy --all-targets
 RUSTDOCFLAGS='-D warnings' cargo +nightly doc --no-deps --workspace
 ```
 
-`protoc` must be on `PATH` for the tests that invoke the compiler. Prefer protoc ≥ 32.1 when exercising edition 2024 inputs. `cargo test` also runs rustdoc examples (doctests). CI: `.github/workflows/rust.yml`.
+`protoc` must be on `PATH` for the tests that invoke the compiler. Prefer protoc ≥ 32.1 when exercising edition 2024 inputs. Integration tests run under `cargo +nightly test`; rustdoc doctests are disabled (`lib/Cargo.toml` sets `doctest = false`) because the crate examples need a live `protoc` / plugin binary. CI: `.github/workflows/rust.yml`.
 
 ## Constraints
 
