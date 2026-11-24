@@ -202,8 +202,9 @@ impl Protoc {
 /// # Example
 ///
 /// This doctest runs for real: it needs `protoc` on `PATH` and the plugin binary
-/// built via `-Z bindeps` (this repo's `.cargo/config.toml`). The hidden helper
-/// builds a minimal `CodeGeneratorResponse` with one file (field 15 → File
+/// built via `-Z bindeps` (this repo's `.cargo/config.toml`).
+/// `encode_code_generator_response_with_one_file` (body hidden below) builds a
+/// minimal `CodeGeneratorResponse` with one file (field 15 → File
 /// `{ name = 1, content = 15 }`).
 ///
 /// ```
