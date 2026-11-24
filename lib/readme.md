@@ -54,7 +54,11 @@ Same as the Install snippets: **Nightly**, **`bindeps`** enabled for the dependi
 
 # Example
 
-```rust
+Disk-based API shape (`no_run` — paths are illustrative). Output file names are
+whatever your closure puts in the `CodeGeneratorResponse`. For a runnable
+end-to-end sample, see [`ProtocOnMemory`].
+
+```rust,no_run
 use protoc_plugin_by_closure::Protoc;
 use std::time::Duration;
 
@@ -63,16 +67,12 @@ Protoc::new()
     .proto_file("my_protobuf_file2.proto")
     .proto_path("path/to/my/input_proto_dir/")
     .out_dir("path/to/my/output_dir/")
-    .run(Duration::from_secs(3), |request_bytes| {
-        // Your plugin logic here, which takes the CodeGeneratorRequest bytes
-        // and returns the Result of CodeGeneratorResponse bytes.
+    .run(Duration::from_secs(3), |_request_bytes| {
+        // Empty response → no output files. Replace with encoded
+        // CodeGeneratorResponse bytes when you want files written.
+        Ok(Vec::new())
     })
     .unwrap();
-
-// The generated file names depend on your plugin logic and the contents of
-// the input proto files, but typically they will be like this:
-assert!(std::path::Path::new("path/to/my/output_dir/my_protobuf_file.rs").exists());
-assert!(std::path::Path::new("path/to/my/output_dir/my_protobuf_file2.rs").exists());
 ```
 
 # How it works

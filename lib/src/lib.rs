@@ -53,27 +53,26 @@ pub type Result<T> = ::std::result::Result<T, ErrorKind>;
 /// See the [crate level documentation](crate) for the basic explanation.
 ///
 /// # Example
-/// ```no_run
-/// # fn run_protoc() {
-///     use protoc_plugin_by_closure::Protoc;
-///     use std::time::Duration;
-///     Protoc::new()
-///         .proto_file("my_protobuf_file.proto")
-///         .proto_file("my_protobuf_file2.proto")
-///         .proto_path("path/to/my/input_proto_dir/")
-///         .out_dir("path/to/my/output_dir/")
-///         .run(Duration::from_secs(3), |request_bytes| {
-///             // Your plugin logic here, which takes the CodeGeneratorRequest bytes
-///             // and returns the Result of CodeGeneratorResponse bytes.
-/// #           unimplemented!()
-///         })
-///         .unwrap();
 ///
-///     // The generated file names depend on your plugin logic and the contents of
-///     // the input proto files, but typically they will be like this:
-///     assert!(std::path::Path::new("path/to/my/output_dir/my_protobuf_file.rs").exists());
-///     assert!(std::path::Path::new("path/to/my/output_dir/my_protobuf_file2.rs").exists());
-/// # }
+/// Needs real paths on disk. Output file names come from the
+/// `CodeGeneratorResponse` your closure returns — not from the `.proto` names
+/// alone. For a runnable end-to-end sample, see [`ProtocOnMemory`].
+///
+/// ```no_run
+/// use protoc_plugin_by_closure::Protoc;
+/// use std::time::Duration;
+///
+/// Protoc::new()
+///     .proto_file("my_protobuf_file.proto")
+///     .proto_file("my_protobuf_file2.proto")
+///     .proto_path("path/to/my/input_proto_dir/")
+///     .out_dir("path/to/my/output_dir/")
+///     .run(Duration::from_secs(3), |_request_bytes| {
+///         // Empty response → no output files. Replace with encoded
+///         // CodeGeneratorResponse bytes when you want files written.
+///         Ok(Vec::new())
+///     })
+///     .unwrap();
 /// ```
 pub struct Protoc {
     protoc_path: PathBuf,
@@ -201,34 +200,74 @@ impl Protoc {
 /// See the [crate level documentation](crate) or [`Protoc`] for the basic explanations.
 ///
 /// # Example
-/// ```no_run
-/// # fn run_protoc() {
-///     use protoc_plugin_by_closure::ProtocOnMemory;
-///     use std::time::Duration;
-///     let result_files = ProtocOnMemory::new()
-///         .add_file("my_protobuf_file.proto", r#"
-/// syntax = "proto3";
-/// package my_package;
-/// message MyMessage {
-///   string name = 1;
-/// }"#)
-///         .add_file("another/path/to/my_protobuf_file2.proto", r#"
-/// syntax = "proto3";
-/// package my_package2;
-/// message MyMessage2 {
-///   string name2 = 2;
-/// }"#)
-///         .run(Duration::from_secs(3), |request_bytes| {
-///             // Your plugin logic here, which takes the CodeGeneratorRequest bytes
-///             // and returns the Result of CodeGeneratorResponse bytes.
-/// #           unimplemented!()
-///         })
-///         .unwrap();
 ///
-///     // The generated filenames depend on your plugin logic, but typically they will be like this:
-///     assert!(result_files.iter().any(|(name, _)| name == "my_package.rs"));
-///     assert!(result_files.iter().any(|(name, _)| name == "my_package2.rs"));
-/// # }
+/// This doctest runs for real: it needs `protoc` on `PATH` and the plugin binary
+/// built via `-Z bindeps` (this repo's `.cargo/config.toml`).
+///
+/// ```
+/// use protoc_plugin_by_closure::ProtocOnMemory;
+/// use std::time::Duration;
+///
+/// // Encodes CodeGeneratorResponse { file: [File { name, content }] }.
+/// fn encode_one_file(name: &str, content: &str) -> Vec<u8> {
+///     // ...
+/// #     use protobuf_core::{Field, FieldNumber, FieldValue, WriteExtProtobuf};
+/// #     let mut file_bytes = Vec::new();
+/// #     file_bytes
+/// #         .write_protobuf_field(&Field::new(
+/// #             FieldNumber::try_from(1u32).unwrap(),
+/// #             FieldValue::Len(name.as_bytes()),
+/// #         ))
+/// #         .unwrap();
+/// #     file_bytes
+/// #         .write_protobuf_field(&Field::new(
+/// #             FieldNumber::try_from(15u32).unwrap(),
+/// #             FieldValue::Len(content.as_bytes()),
+/// #         ))
+/// #         .unwrap();
+/// #     let mut out = Vec::new();
+/// #     out.write_protobuf_field(&Field::new(
+/// #         FieldNumber::try_from(15u32).unwrap(),
+/// #         FieldValue::Len(file_bytes),
+/// #     ))
+/// #     .unwrap();
+/// #     out
+/// }
+///
+/// let files = ProtocOnMemory::new()
+///     .add_file(
+///         "empty.proto",
+///         r#"syntax = "proto3"; package empty;"#,
+///     )
+///     .run(Duration::from_secs(3), |_request_bytes| {
+///         Ok(encode_one_file("out.rs", "hello from plugin\n"))
+///     })
+///     .expect("protoc + plugin IPC");
+/// assert_eq!(files, vec![("out.rs".into(), "hello from plugin\n".into())]);
+/// ```
+///
+/// Nested virtual input paths (compile-checked only). Output names still come
+/// from the response your closure returns:
+///
+/// ```no_run
+/// use protoc_plugin_by_closure::ProtocOnMemory;
+/// use std::time::Duration;
+///
+/// let _files = ProtocOnMemory::new()
+///     .add_file(
+///         "dir/a.proto",
+///         r#"syntax = "proto3"; package a;"#,
+///     )
+///     .add_file(
+///         "dir/b.proto",
+///         r#"syntax = "proto3"; package b;"#,
+///     )
+///     .run(Duration::from_secs(3), |_request_bytes| {
+///         // Empty response → no output files. Replace with encoded
+///         // CodeGeneratorResponse bytes when you want files written.
+///         Ok(Vec::new())
+///     })
+///     .unwrap();
 /// ```
 #[cfg(feature = "on-memory")]
 pub struct ProtocOnMemory {

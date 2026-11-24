@@ -8,9 +8,6 @@ repository = "https://github.com/wada314/protoc-plugin-by-closure"
 documentation = "https://wada314.github.io/protoc-plugin-by-closure/protoc_plugin_by_closure/index.html"
 readme = "readme.md"
 
-[lib]
-doctest = false
-
 [dependencies]
 ipc-channel = "0.20.1"
 thiserror = "2.0.9"
