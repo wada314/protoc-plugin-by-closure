@@ -211,7 +211,7 @@ impl Protoc {
 /// use std::time::Duration;
 /// # use protobuf_core::{Field, FieldNumber, FieldValue, WriteExtProtobuf};
 /// #
-/// # fn response_one_file(name: &str, content: &str) -> Vec<u8> {
+/// # fn encode_code_generator_response_with_one_file(name: &str, content: &str) -> Vec<u8> {
 /// #     let mut file_bytes = Vec::new();
 /// #     file_bytes
 /// #         .write_protobuf_field(&Field::new(
@@ -240,7 +240,10 @@ impl Protoc {
 ///         r#"syntax = "proto3"; package empty;"#,
 ///     )
 ///     .run(Duration::from_secs(3), |_request_bytes| {
-///         Ok(response_one_file("out.rs", "hello from plugin\n"))
+///         Ok(encode_code_generator_response_with_one_file(
+///             "out.rs",
+///             "hello from plugin\n",
+///         ))
 ///     })
 ///     .expect("protoc + plugin IPC");
 /// assert_eq!(files, vec![("out.rs".into(), "hello from plugin\n".into())]);
