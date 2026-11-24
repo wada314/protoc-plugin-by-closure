@@ -54,8 +54,9 @@ pub type Result<T> = ::std::result::Result<T, ErrorKind>;
 ///
 /// # Example
 ///
-/// Needs real paths on disk. For a runnable example that only needs `protoc` on
-/// `PATH`, see [`ProtocOnMemory`].
+/// Needs real paths on disk. Output file names come from the
+/// `CodeGeneratorResponse` your closure returns — not from the `.proto` names
+/// alone. For a runnable end-to-end sample, see [`ProtocOnMemory`].
 ///
 /// ```no_run
 /// use protoc_plugin_by_closure::Protoc;
@@ -67,13 +68,10 @@ pub type Result<T> = ::std::result::Result<T, ErrorKind>;
 ///     .proto_path("path/to/my/input_proto_dir/")
 ///     .out_dir("path/to/my/output_dir/")
 ///     .run(Duration::from_secs(3), |_request_bytes| {
-///         // CodeGeneratorRequest bytes in → CodeGeneratorResponse bytes out.
+///         // Encode a CodeGeneratorResponse and return its bytes.
 ///         Ok(Vec::new())
 ///     })
 ///     .unwrap();
-///
-/// assert!(std::path::Path::new("path/to/my/output_dir/my_protobuf_file.rs").exists());
-/// assert!(std::path::Path::new("path/to/my/output_dir/my_protobuf_file2.rs").exists());
 /// ```
 pub struct Protoc {
     protoc_path: PathBuf,
@@ -203,11 +201,37 @@ impl Protoc {
 /// # Example
 ///
 /// This doctest runs for real: it needs `protoc` on `PATH` and the plugin binary
-/// built via `-Z bindeps` (this repo's `.cargo/config.toml`).
+/// built via `-Z bindeps` (this repo's `.cargo/config.toml`). The hidden helper
+/// builds a minimal `CodeGeneratorResponse` with one file (field 15 → File
+/// `{ name = 1, content = 15 }`).
 ///
 /// ```
 /// use protoc_plugin_by_closure::ProtocOnMemory;
 /// use std::time::Duration;
+/// # use protobuf_core::{Field, FieldNumber, FieldValue, WriteExtProtobuf};
+/// #
+/// # fn response_one_file(name: &str, content: &str) -> Vec<u8> {
+/// #     let mut file_bytes = Vec::new();
+/// #     file_bytes
+/// #         .write_protobuf_field(&Field::new(
+/// #             FieldNumber::try_from(1u32).unwrap(),
+/// #             FieldValue::Len(name.as_bytes()),
+/// #         ))
+/// #         .unwrap();
+/// #     file_bytes
+/// #         .write_protobuf_field(&Field::new(
+/// #             FieldNumber::try_from(15u32).unwrap(),
+/// #             FieldValue::Len(content.as_bytes()),
+/// #         ))
+/// #         .unwrap();
+/// #     let mut out = Vec::new();
+/// #     out.write_protobuf_field(&Field::new(
+/// #         FieldNumber::try_from(15u32).unwrap(),
+/// #         FieldValue::Len(file_bytes),
+/// #     ))
+/// #     .unwrap();
+/// #     out
+/// # }
 ///
 /// let files = ProtocOnMemory::new()
 ///     .add_file(
@@ -215,43 +239,33 @@ impl Protoc {
 ///         r#"syntax = "proto3"; package empty;"#,
 ///     )
 ///     .run(Duration::from_secs(3), |_request_bytes| {
-///         // Empty CodeGeneratorResponse → no generated files.
-///         Ok(Vec::new())
+///         Ok(response_one_file("out.rs", "hello from plugin\n"))
 ///     })
 ///     .expect("protoc + plugin IPC");
-/// assert!(files.is_empty());
+/// assert_eq!(files, vec![("out.rs".into(), "hello from plugin\n".into())]);
 /// ```
 ///
-/// Multi-file / nested virtual paths (compile-checked only):
+/// Nested virtual input paths (compile-checked only). Output names still come
+/// from the response your closure returns:
 ///
 /// ```no_run
 /// use protoc_plugin_by_closure::ProtocOnMemory;
 /// use std::time::Duration;
 ///
-/// let result_files = ProtocOnMemory::new()
+/// let _files = ProtocOnMemory::new()
 ///     .add_file(
-///         "my_protobuf_file.proto",
-///         r#"
-/// syntax = "proto3";
-/// package my_package;
-/// message MyMessage {
-///   string name = 1;
-/// }"#,
+///         "dir/a.proto",
+///         r#"syntax = "proto3"; package a;"#,
 ///     )
 ///     .add_file(
-///         "another/path/to/my_protobuf_file2.proto",
-///         r#"
-/// syntax = "proto3";
-/// package my_package2;
-/// message MyMessage2 {
-///   string name2 = 2;
-/// }"#,
+///         "dir/b.proto",
+///         r#"syntax = "proto3"; package b;"#,
 ///     )
-///     .run(Duration::from_secs(3), |_request_bytes| Ok(Vec::new()))
+///     .run(Duration::from_secs(3), |_request_bytes| {
+///         // Return an encoded CodeGeneratorResponse listing the files to write.
+///         Ok(Vec::new())
+///     })
 ///     .unwrap();
-///
-/// assert!(result_files.iter().any(|(name, _)| name == "my_package.rs"));
-/// assert!(result_files.iter().any(|(name, _)| name == "my_package2.rs"));
 /// ```
 #[cfg(feature = "on-memory")]
 pub struct ProtocOnMemory {
