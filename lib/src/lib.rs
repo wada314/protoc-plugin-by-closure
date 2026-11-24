@@ -203,16 +203,16 @@ impl Protoc {
 ///
 /// This doctest runs for real: it needs `protoc` on `PATH` and the plugin binary
 /// built via `-Z bindeps` (this repo's `.cargo/config.toml`).
-/// `encode_code_generator_response_with_one_file` (body hidden below) builds a
-/// minimal `CodeGeneratorResponse` with one file (field 15 → File
-/// `{ name = 1, content = 15 }`).
 ///
 /// ```
 /// use protoc_plugin_by_closure::ProtocOnMemory;
 /// use std::time::Duration;
-/// # use protobuf_core::{Field, FieldNumber, FieldValue, WriteExtProtobuf};
-/// #
-/// # fn encode_code_generator_response_with_one_file(name: &str, content: &str) -> Vec<u8> {
+///
+/// // Encodes a CodeGeneratorResponse with one File { name, content }
+/// // (plugin.proto: response.file = 15, File.name = 1, File.content = 15).
+/// fn encode_one_file(name: &str, content: &str) -> Vec<u8> {
+///     // ...
+/// #     use protobuf_core::{Field, FieldNumber, FieldValue, WriteExtProtobuf};
 /// #     let mut file_bytes = Vec::new();
 /// #     file_bytes
 /// #         .write_protobuf_field(&Field::new(
@@ -233,7 +233,7 @@ impl Protoc {
 /// #     ))
 /// #     .unwrap();
 /// #     out
-/// # }
+/// }
 ///
 /// let files = ProtocOnMemory::new()
 ///     .add_file(
@@ -241,10 +241,7 @@ impl Protoc {
 ///         r#"syntax = "proto3"; package empty;"#,
 ///     )
 ///     .run(Duration::from_secs(3), |_request_bytes| {
-///         Ok(encode_code_generator_response_with_one_file(
-///             "out.rs",
-///             "hello from plugin\n",
-///         ))
+///         Ok(encode_one_file("out.rs", "hello from plugin\n"))
 ///     })
 ///     .expect("protoc + plugin IPC");
 /// assert_eq!(files, vec![("out.rs".into(), "hello from plugin\n".into())]);
