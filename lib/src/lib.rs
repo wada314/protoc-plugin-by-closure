@@ -262,7 +262,8 @@ impl Protoc {
 ///         r#"syntax = "proto3"; package b;"#,
 ///     )
 ///     .run(Duration::from_secs(3), |_request_bytes| {
-///         // Return an encoded CodeGeneratorResponse listing the files to write.
+///         // Empty response → no output files. Replace with encoded
+///         // CodeGeneratorResponse bytes when you want files written.
 ///         Ok(Vec::new())
 ///     })
 ///     .unwrap();
