@@ -33,8 +33,11 @@ jobs:
         run: cargo +nightly fmt --all -- --check
       - name: Clippy
         run: cargo +nightly clippy --locked --all-targets -- -D warnings
-      - name: Test (includes doctests)
+      - name: Test
         run: cargo +nightly test --locked
+      - name: Test without default features
+        # `on-memory` is optional; keep `Protoc`-only builds green.
+        run: cargo +nightly test --locked --no-default-features
       - name: Docs
         env:
           RUSTDOCFLAGS: -D warnings

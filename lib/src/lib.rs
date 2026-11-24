@@ -236,12 +236,14 @@ pub struct ProtocOnMemory {
     in_files: Vec<(String, String)>,
 }
 
+#[cfg(feature = "on-memory")]
 impl Default for ProtocOnMemory {
     fn default() -> Self {
         Self::new()
     }
 }
 
+#[cfg(feature = "on-memory")]
 impl ProtocOnMemory {
     /// Creates a new `ProtocOnMemory` instance.
     pub fn new() -> Self {
@@ -287,9 +289,12 @@ impl ProtocOnMemory {
             .ok_or(ErrorKind::FileNameError)?
             .to_string();
 
-        // write the proto files to the temp dir.
+        // write the proto files to the temp dir (create parents for nested names).
         for (name, content) in &self.in_files {
             let path = proto_dir.path().join(name);
+            if let Some(parent) = path.parent() {
+                ::std::fs::create_dir_all(parent)?;
+            }
             ::std::fs::write(&path, content)?;
         }
 

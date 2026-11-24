@@ -19,7 +19,9 @@ use ::std::io::Write;
 use ::std::time::Duration;
 use ::tempfile::{NamedTempFile, tempdir};
 
-use self::compiler_plugin::{CodeGeneratorRequest, CodeGeneratorResponse, File};
+use self::compiler_plugin::{
+    assert_one_proto_file_and_respond, request_parameter, response_with_files,
+};
 
 #[test]
 fn test_call_wrapper() {
@@ -44,7 +46,13 @@ package empty;
         .proto_file(proto_file.path().to_str().unwrap())
         .proto_path(proto_dir.path().to_str().unwrap())
         .run(Duration::from_secs(3), |req| {
-            Ok(test_call_wrapper_inner(
+            // `--rust-ppbc_opt` must land in CodeGeneratorRequest.parameter.
+            let param = request_parameter(req).unwrap();
+            assert!(
+                param.as_ref().is_some_and(|p| !p.is_empty()),
+                "expected non-empty parameter (IPC key), got {param:?}"
+            );
+            Ok(assert_one_proto_file_and_respond(
                 req,
                 out_file_name,
                 out_file_content,
@@ -56,25 +64,38 @@ package empty;
     assert_eq!(actual_out, out_file_content);
 }
 
-fn test_call_wrapper_inner(
-    req_bytes: &[u8],
-    out_file_name: &str,
-    out_file_content: &str,
-) -> Vec<u8> {
-    let req = CodeGeneratorRequest::from_bytes(req_bytes).unwrap();
-    // Check that we received one proto file
-    assert_eq!(req.proto_file_count, 1);
+#[test]
+fn multi_proto_files_reach_the_closure() {
+    let out_dir = tempdir().unwrap();
+    let proto_dir = tempdir().unwrap();
+    let a = NamedTempFile::new_in(proto_dir.path()).unwrap();
+    let b = NamedTempFile::new_in(proto_dir.path()).unwrap();
+    a.as_file()
+        .write_all(br#"syntax = "proto3"; package a;"#)
+        .unwrap();
+    b.as_file()
+        .write_all(br#"syntax = "proto3"; package b;"#)
+        .unwrap();
 
-    // Create response with one file
-    let file = File {
-        name: out_file_name.to_string(),
-        content: out_file_content.to_string(),
-    };
+    Protoc::new()
+        .protoc_path("protoc")
+        .out_dir(out_dir.path().to_str().unwrap())
+        .proto_file(a.path().to_str().unwrap())
+        .proto_file(b.path().to_str().unwrap())
+        .proto_path(proto_dir.path().to_str().unwrap())
+        .run(Duration::from_secs(3), |req| {
+            let parsed = compiler_plugin::CodeGeneratorRequest::from_bytes(req).unwrap();
+            assert_eq!(parsed.proto_file_count, 2);
+            Ok(response_with_files(&[("a.rs", "A"), ("b.rs", "B")]))
+        })
+        .unwrap();
 
-    let mut res = CodeGeneratorResponse::default();
-    res.files.push(file);
-
-    let mut res_bytes = Vec::new();
-    res.to_bytes(&mut res_bytes).unwrap();
-    res_bytes
+    assert_eq!(
+        ::std::fs::read_to_string(out_dir.path().join("a.rs")).unwrap(),
+        "A"
+    );
+    assert_eq!(
+        ::std::fs::read_to_string(out_dir.path().join("b.rs")).unwrap(),
+        "B"
+    );
 }
