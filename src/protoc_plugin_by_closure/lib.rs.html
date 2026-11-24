@@ -236,99 +236,104 @@
 <a href=#236 id=236 data-nosnippet>236</a>    in_files: Vec&lt;(String, String)&gt;,
 <a href=#237 id=237 data-nosnippet>237</a>}
 <a href=#238 id=238 data-nosnippet>238</a>
-<a href=#239 id=239 data-nosnippet>239</a><span class="kw">impl </span>Default <span class="kw">for </span>ProtocOnMemory {
-<a href=#240 id=240 data-nosnippet>240</a>    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-<a href=#241 id=241 data-nosnippet>241</a>        <span class="self">Self</span>::new()
-<a href=#242 id=242 data-nosnippet>242</a>    }
-<a href=#243 id=243 data-nosnippet>243</a>}
-<a href=#244 id=244 data-nosnippet>244</a>
-<a href=#245 id=245 data-nosnippet>245</a><span class="kw">impl </span>ProtocOnMemory {
-<a href=#246 id=246 data-nosnippet>246</a>    <span class="doccomment">/// Creates a new `ProtocOnMemory` instance.
-<a href=#247 id=247 data-nosnippet>247</a>    </span><span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
-<a href=#248 id=248 data-nosnippet>248</a>        <span class="self">Self </span>{
-<a href=#249 id=249 data-nosnippet>249</a>            protoc: Protoc::new(),
-<a href=#250 id=250 data-nosnippet>250</a>            in_files: Vec::new(),
-<a href=#251 id=251 data-nosnippet>251</a>        }
-<a href=#252 id=252 data-nosnippet>252</a>    }
-<a href=#253 id=253 data-nosnippet>253</a>    <span class="doccomment">/// Sets the path to the `protoc` command. Default is `"protoc"`.
-<a href=#254 id=254 data-nosnippet>254</a>    </span><span class="kw">pub fn </span>protoc_path(<span class="kw-2">mut </span><span class="self">self</span>, path: <span class="kw">impl </span>Into&lt;PathBuf&gt;) -&gt; <span class="self">Self </span>{
-<a href=#255 id=255 data-nosnippet>255</a>        <span class="self">self</span>.protoc = <span class="self">self</span>.protoc.protoc_path(path);
-<a href=#256 id=256 data-nosnippet>256</a>        <span class="self">self
-<a href=#257 id=257 data-nosnippet>257</a>    </span>}
-<a href=#258 id=258 data-nosnippet>258</a>    <span class="doccomment">/// Adds a (virtual) input proto file. Corresponds to the `protoc` command's unnamed argument.
-<a href=#259 id=259 data-nosnippet>259</a>    </span><span class="kw">pub fn </span>add_file(<span class="kw-2">mut </span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str, content: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
-<a href=#260 id=260 data-nosnippet>260</a>        <span class="self">self</span>.in_files.push((name.to_string(), content.to_string()));
-<a href=#261 id=261 data-nosnippet>261</a>        <span class="self">self
-<a href=#262 id=262 data-nosnippet>262</a>    </span>}
-<a href=#263 id=263 data-nosnippet>263</a>    <span class="doccomment">/// Adds (virtual) input proto files. Corresponds to the `protoc` command's unnamed arguments.
-<a href=#264 id=264 data-nosnippet>264</a>    </span><span class="kw">pub fn </span>add_files&lt;I&gt;(<span class="kw-2">mut </span><span class="self">self</span>, files: I) -&gt; <span class="self">Self
-<a href=#265 id=265 data-nosnippet>265</a>    </span><span class="kw">where
-<a href=#266 id=266 data-nosnippet>266</a>        </span>I: IntoIterator&lt;Item = (String, String)&gt;,
-<a href=#267 id=267 data-nosnippet>267</a>    {
-<a href=#268 id=268 data-nosnippet>268</a>        <span class="self">self</span>.in_files.extend(files);
-<a href=#269 id=269 data-nosnippet>269</a>        <span class="self">self
-<a href=#270 id=270 data-nosnippet>270</a>    </span>}
-<a href=#271 id=271 data-nosnippet>271</a>
-<a href=#272 id=272 data-nosnippet>272</a>    <span class="doccomment">/// Runs the `protoc` command with the given closure as a plugin code.
-<a href=#273 id=273 data-nosnippet>273</a>    ///
-<a href=#274 id=274 data-nosnippet>274</a>    /// The `body` param can be any `FnOnce` closure which takes the encoded `CodeGeneratorRequest` bytes
-<a href=#275 id=275 data-nosnippet>275</a>    /// and returns the `Result` of encoded `CodeGeneratorResponse` bytes.
-<a href=#276 id=276 data-nosnippet>276</a>    ///
-<a href=#277 id=277 data-nosnippet>277</a>    /// Set the `timeout` to the maximum duration of the `protoc` command execution.
-<a href=#278 id=278 data-nosnippet>278</a>    </span><span class="kw">pub fn </span>run&lt;F&gt;(<span class="self">self</span>, timeout: Duration, func: F) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;(String, String)&gt;&gt;
-<a href=#279 id=279 data-nosnippet>279</a>    <span class="kw">where
-<a href=#280 id=280 data-nosnippet>280</a>        </span>F: FnOnce(<span class="kw-2">&amp;</span>[u8]) -&gt; ::std::result::Result&lt;Vec&lt;u8&gt;, String&gt;,
-<a href=#281 id=281 data-nosnippet>281</a>    {
-<a href=#282 id=282 data-nosnippet>282</a>        <span class="kw">let </span>proto_dir = TempDir::new()<span class="question-mark">?</span>;
-<a href=#283 id=283 data-nosnippet>283</a>        <span class="kw">let </span>out_dir = TempDir::new()<span class="question-mark">?</span>;
-<a href=#284 id=284 data-nosnippet>284</a>        <span class="kw">let </span>out_dir_path = out_dir
-<a href=#285 id=285 data-nosnippet>285</a>            .path()
-<a href=#286 id=286 data-nosnippet>286</a>            .to_str()
-<a href=#287 id=287 data-nosnippet>287</a>            .ok_or(ErrorKind::FileNameError)<span class="question-mark">?
-<a href=#288 id=288 data-nosnippet>288</a>            </span>.to_string();
-<a href=#289 id=289 data-nosnippet>289</a>
-<a href=#290 id=290 data-nosnippet>290</a>        <span class="comment">// write the proto files to the temp dir.
-<a href=#291 id=291 data-nosnippet>291</a>        </span><span class="kw">for </span>(name, content) <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.in_files {
-<a href=#292 id=292 data-nosnippet>292</a>            <span class="kw">let </span>path = proto_dir.path().join(name);
-<a href=#293 id=293 data-nosnippet>293</a>            ::std::fs::write(<span class="kw-2">&amp;</span>path, content)<span class="question-mark">?</span>;
-<a href=#294 id=294 data-nosnippet>294</a>        }
-<a href=#295 id=295 data-nosnippet>295</a>
-<a href=#296 id=296 data-nosnippet>296</a>        <span class="comment">// run the protoc
-<a href=#297 id=297 data-nosnippet>297</a>        </span><span class="kw">let </span>proto_file_paths = <span class="self">self
-<a href=#298 id=298 data-nosnippet>298</a>            </span>.in_files
-<a href=#299 id=299 data-nosnippet>299</a>            .iter()
-<a href=#300 id=300 data-nosnippet>300</a>            .map(|(name, <span class="kw">_</span>)| {
-<a href=#301 id=301 data-nosnippet>301</a>                proto_dir
-<a href=#302 id=302 data-nosnippet>302</a>                    .path()
-<a href=#303 id=303 data-nosnippet>303</a>                    .join(name)
-<a href=#304 id=304 data-nosnippet>304</a>                    .to_str()
-<a href=#305 id=305 data-nosnippet>305</a>                    .ok_or(ErrorKind::FileNameError)
-<a href=#306 id=306 data-nosnippet>306</a>                    .map(str::to_string)
-<a href=#307 id=307 data-nosnippet>307</a>            })
-<a href=#308 id=308 data-nosnippet>308</a>            .collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?</span>;
-<a href=#309 id=309 data-nosnippet>309</a>
-<a href=#310 id=310 data-nosnippet>310</a>        <span class="self">self</span>.protoc
-<a href=#311 id=311 data-nosnippet>311</a>            .out_dir(<span class="kw-2">&amp;</span>out_dir_path)
-<a href=#312 id=312 data-nosnippet>312</a>            .proto_path(proto_dir.path().to_str().ok_or(ErrorKind::FileNameError)<span class="question-mark">?</span>)
-<a href=#313 id=313 data-nosnippet>313</a>            .proto_files(proto_file_paths)
-<a href=#314 id=314 data-nosnippet>314</a>            .run(timeout, func)<span class="question-mark">?</span>;
-<a href=#315 id=315 data-nosnippet>315</a>
-<a href=#316 id=316 data-nosnippet>316</a>        <span class="comment">// read the generated files
-<a href=#317 id=317 data-nosnippet>317</a>        </span><span class="kw">let </span>output_files = ::std::fs::read_dir(out_dir.path())<span class="question-mark">?
-<a href=#318 id=318 data-nosnippet>318</a>            </span>.map(|entry| -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">_</span>&gt; {
-<a href=#319 id=319 data-nosnippet>319</a>                <span class="kw">let </span>path = entry<span class="question-mark">?</span>.path();
-<a href=#320 id=320 data-nosnippet>320</a>                <span class="kw">let </span>name = path
-<a href=#321 id=321 data-nosnippet>321</a>                    .strip_prefix(out_dir.path())
-<a href=#322 id=322 data-nosnippet>322</a>                    .map_err(|<span class="kw">_</span>| ErrorKind::FileNameError)<span class="question-mark">?
-<a href=#323 id=323 data-nosnippet>323</a>                    </span>.to_str()
-<a href=#324 id=324 data-nosnippet>324</a>                    .ok_or(ErrorKind::FileNameError)<span class="question-mark">?
-<a href=#325 id=325 data-nosnippet>325</a>                    </span>.to_string();
-<a href=#326 id=326 data-nosnippet>326</a>                <span class="kw">let </span>content = ::std::fs::read_to_string(<span class="kw-2">&amp;</span>path)<span class="question-mark">?</span>;
-<a href=#327 id=327 data-nosnippet>327</a>                <span class="prelude-val">Ok</span>((name, content))
-<a href=#328 id=328 data-nosnippet>328</a>            })
-<a href=#329 id=329 data-nosnippet>329</a>            .collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?</span>;
-<a href=#330 id=330 data-nosnippet>330</a>
-<a href=#331 id=331 data-nosnippet>331</a>        <span class="prelude-val">Ok</span>(output_files)
-<a href=#332 id=332 data-nosnippet>332</a>    }
-<a href=#333 id=333 data-nosnippet>333</a>}
+<a href=#239 id=239 data-nosnippet>239</a><span class="attr">#[cfg(feature = <span class="string">"on-memory"</span>)]
+<a href=#240 id=240 data-nosnippet>240</a></span><span class="kw">impl </span>Default <span class="kw">for </span>ProtocOnMemory {
+<a href=#241 id=241 data-nosnippet>241</a>    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+<a href=#242 id=242 data-nosnippet>242</a>        <span class="self">Self</span>::new()
+<a href=#243 id=243 data-nosnippet>243</a>    }
+<a href=#244 id=244 data-nosnippet>244</a>}
+<a href=#245 id=245 data-nosnippet>245</a>
+<a href=#246 id=246 data-nosnippet>246</a><span class="attr">#[cfg(feature = <span class="string">"on-memory"</span>)]
+<a href=#247 id=247 data-nosnippet>247</a></span><span class="kw">impl </span>ProtocOnMemory {
+<a href=#248 id=248 data-nosnippet>248</a>    <span class="doccomment">/// Creates a new `ProtocOnMemory` instance.
+<a href=#249 id=249 data-nosnippet>249</a>    </span><span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
+<a href=#250 id=250 data-nosnippet>250</a>        <span class="self">Self </span>{
+<a href=#251 id=251 data-nosnippet>251</a>            protoc: Protoc::new(),
+<a href=#252 id=252 data-nosnippet>252</a>            in_files: Vec::new(),
+<a href=#253 id=253 data-nosnippet>253</a>        }
+<a href=#254 id=254 data-nosnippet>254</a>    }
+<a href=#255 id=255 data-nosnippet>255</a>    <span class="doccomment">/// Sets the path to the `protoc` command. Default is `"protoc"`.
+<a href=#256 id=256 data-nosnippet>256</a>    </span><span class="kw">pub fn </span>protoc_path(<span class="kw-2">mut </span><span class="self">self</span>, path: <span class="kw">impl </span>Into&lt;PathBuf&gt;) -&gt; <span class="self">Self </span>{
+<a href=#257 id=257 data-nosnippet>257</a>        <span class="self">self</span>.protoc = <span class="self">self</span>.protoc.protoc_path(path);
+<a href=#258 id=258 data-nosnippet>258</a>        <span class="self">self
+<a href=#259 id=259 data-nosnippet>259</a>    </span>}
+<a href=#260 id=260 data-nosnippet>260</a>    <span class="doccomment">/// Adds a (virtual) input proto file. Corresponds to the `protoc` command's unnamed argument.
+<a href=#261 id=261 data-nosnippet>261</a>    </span><span class="kw">pub fn </span>add_file(<span class="kw-2">mut </span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str, content: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
+<a href=#262 id=262 data-nosnippet>262</a>        <span class="self">self</span>.in_files.push((name.to_string(), content.to_string()));
+<a href=#263 id=263 data-nosnippet>263</a>        <span class="self">self
+<a href=#264 id=264 data-nosnippet>264</a>    </span>}
+<a href=#265 id=265 data-nosnippet>265</a>    <span class="doccomment">/// Adds (virtual) input proto files. Corresponds to the `protoc` command's unnamed arguments.
+<a href=#266 id=266 data-nosnippet>266</a>    </span><span class="kw">pub fn </span>add_files&lt;I&gt;(<span class="kw-2">mut </span><span class="self">self</span>, files: I) -&gt; <span class="self">Self
+<a href=#267 id=267 data-nosnippet>267</a>    </span><span class="kw">where
+<a href=#268 id=268 data-nosnippet>268</a>        </span>I: IntoIterator&lt;Item = (String, String)&gt;,
+<a href=#269 id=269 data-nosnippet>269</a>    {
+<a href=#270 id=270 data-nosnippet>270</a>        <span class="self">self</span>.in_files.extend(files);
+<a href=#271 id=271 data-nosnippet>271</a>        <span class="self">self
+<a href=#272 id=272 data-nosnippet>272</a>    </span>}
+<a href=#273 id=273 data-nosnippet>273</a>
+<a href=#274 id=274 data-nosnippet>274</a>    <span class="doccomment">/// Runs the `protoc` command with the given closure as a plugin code.
+<a href=#275 id=275 data-nosnippet>275</a>    ///
+<a href=#276 id=276 data-nosnippet>276</a>    /// The `body` param can be any `FnOnce` closure which takes the encoded `CodeGeneratorRequest` bytes
+<a href=#277 id=277 data-nosnippet>277</a>    /// and returns the `Result` of encoded `CodeGeneratorResponse` bytes.
+<a href=#278 id=278 data-nosnippet>278</a>    ///
+<a href=#279 id=279 data-nosnippet>279</a>    /// Set the `timeout` to the maximum duration of the `protoc` command execution.
+<a href=#280 id=280 data-nosnippet>280</a>    </span><span class="kw">pub fn </span>run&lt;F&gt;(<span class="self">self</span>, timeout: Duration, func: F) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;(String, String)&gt;&gt;
+<a href=#281 id=281 data-nosnippet>281</a>    <span class="kw">where
+<a href=#282 id=282 data-nosnippet>282</a>        </span>F: FnOnce(<span class="kw-2">&amp;</span>[u8]) -&gt; ::std::result::Result&lt;Vec&lt;u8&gt;, String&gt;,
+<a href=#283 id=283 data-nosnippet>283</a>    {
+<a href=#284 id=284 data-nosnippet>284</a>        <span class="kw">let </span>proto_dir = TempDir::new()<span class="question-mark">?</span>;
+<a href=#285 id=285 data-nosnippet>285</a>        <span class="kw">let </span>out_dir = TempDir::new()<span class="question-mark">?</span>;
+<a href=#286 id=286 data-nosnippet>286</a>        <span class="kw">let </span>out_dir_path = out_dir
+<a href=#287 id=287 data-nosnippet>287</a>            .path()
+<a href=#288 id=288 data-nosnippet>288</a>            .to_str()
+<a href=#289 id=289 data-nosnippet>289</a>            .ok_or(ErrorKind::FileNameError)<span class="question-mark">?
+<a href=#290 id=290 data-nosnippet>290</a>            </span>.to_string();
+<a href=#291 id=291 data-nosnippet>291</a>
+<a href=#292 id=292 data-nosnippet>292</a>        <span class="comment">// write the proto files to the temp dir (create parents for nested names).
+<a href=#293 id=293 data-nosnippet>293</a>        </span><span class="kw">for </span>(name, content) <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.in_files {
+<a href=#294 id=294 data-nosnippet>294</a>            <span class="kw">let </span>path = proto_dir.path().join(name);
+<a href=#295 id=295 data-nosnippet>295</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>(parent) = path.parent() {
+<a href=#296 id=296 data-nosnippet>296</a>                ::std::fs::create_dir_all(parent)<span class="question-mark">?</span>;
+<a href=#297 id=297 data-nosnippet>297</a>            }
+<a href=#298 id=298 data-nosnippet>298</a>            ::std::fs::write(<span class="kw-2">&amp;</span>path, content)<span class="question-mark">?</span>;
+<a href=#299 id=299 data-nosnippet>299</a>        }
+<a href=#300 id=300 data-nosnippet>300</a>
+<a href=#301 id=301 data-nosnippet>301</a>        <span class="comment">// run the protoc
+<a href=#302 id=302 data-nosnippet>302</a>        </span><span class="kw">let </span>proto_file_paths = <span class="self">self
+<a href=#303 id=303 data-nosnippet>303</a>            </span>.in_files
+<a href=#304 id=304 data-nosnippet>304</a>            .iter()
+<a href=#305 id=305 data-nosnippet>305</a>            .map(|(name, <span class="kw">_</span>)| {
+<a href=#306 id=306 data-nosnippet>306</a>                proto_dir
+<a href=#307 id=307 data-nosnippet>307</a>                    .path()
+<a href=#308 id=308 data-nosnippet>308</a>                    .join(name)
+<a href=#309 id=309 data-nosnippet>309</a>                    .to_str()
+<a href=#310 id=310 data-nosnippet>310</a>                    .ok_or(ErrorKind::FileNameError)
+<a href=#311 id=311 data-nosnippet>311</a>                    .map(str::to_string)
+<a href=#312 id=312 data-nosnippet>312</a>            })
+<a href=#313 id=313 data-nosnippet>313</a>            .collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?</span>;
+<a href=#314 id=314 data-nosnippet>314</a>
+<a href=#315 id=315 data-nosnippet>315</a>        <span class="self">self</span>.protoc
+<a href=#316 id=316 data-nosnippet>316</a>            .out_dir(<span class="kw-2">&amp;</span>out_dir_path)
+<a href=#317 id=317 data-nosnippet>317</a>            .proto_path(proto_dir.path().to_str().ok_or(ErrorKind::FileNameError)<span class="question-mark">?</span>)
+<a href=#318 id=318 data-nosnippet>318</a>            .proto_files(proto_file_paths)
+<a href=#319 id=319 data-nosnippet>319</a>            .run(timeout, func)<span class="question-mark">?</span>;
+<a href=#320 id=320 data-nosnippet>320</a>
+<a href=#321 id=321 data-nosnippet>321</a>        <span class="comment">// read the generated files
+<a href=#322 id=322 data-nosnippet>322</a>        </span><span class="kw">let </span>output_files = ::std::fs::read_dir(out_dir.path())<span class="question-mark">?
+<a href=#323 id=323 data-nosnippet>323</a>            </span>.map(|entry| -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">_</span>&gt; {
+<a href=#324 id=324 data-nosnippet>324</a>                <span class="kw">let </span>path = entry<span class="question-mark">?</span>.path();
+<a href=#325 id=325 data-nosnippet>325</a>                <span class="kw">let </span>name = path
+<a href=#326 id=326 data-nosnippet>326</a>                    .strip_prefix(out_dir.path())
+<a href=#327 id=327 data-nosnippet>327</a>                    .map_err(|<span class="kw">_</span>| ErrorKind::FileNameError)<span class="question-mark">?
+<a href=#328 id=328 data-nosnippet>328</a>                    </span>.to_str()
+<a href=#329 id=329 data-nosnippet>329</a>                    .ok_or(ErrorKind::FileNameError)<span class="question-mark">?
+<a href=#330 id=330 data-nosnippet>330</a>                    </span>.to_string();
+<a href=#331 id=331 data-nosnippet>331</a>                <span class="kw">let </span>content = ::std::fs::read_to_string(<span class="kw-2">&amp;</span>path)<span class="question-mark">?</span>;
+<a href=#332 id=332 data-nosnippet>332</a>                <span class="prelude-val">Ok</span>((name, content))
+<a href=#333 id=333 data-nosnippet>333</a>            })
+<a href=#334 id=334 data-nosnippet>334</a>            .collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?</span>;
+<a href=#335 id=335 data-nosnippet>335</a>
+<a href=#336 id=336 data-nosnippet>336</a>        <span class="prelude-val">Ok</span>(output_files)
+<a href=#337 id=337 data-nosnippet>337</a>    }
+<a href=#338 id=338 data-nosnippet>338</a>}
 </code></pre></div></section></main></body></html>
