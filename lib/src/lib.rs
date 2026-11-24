@@ -53,27 +53,27 @@ pub type Result<T> = ::std::result::Result<T, ErrorKind>;
 /// See the [crate level documentation](crate) for the basic explanation.
 ///
 /// # Example
-/// ```no_run
-/// # fn run_protoc() {
-///     use protoc_plugin_by_closure::Protoc;
-///     use std::time::Duration;
-///     Protoc::new()
-///         .proto_file("my_protobuf_file.proto")
-///         .proto_file("my_protobuf_file2.proto")
-///         .proto_path("path/to/my/input_proto_dir/")
-///         .out_dir("path/to/my/output_dir/")
-///         .run(Duration::from_secs(3), |request_bytes| {
-///             // Your plugin logic here, which takes the CodeGeneratorRequest bytes
-///             // and returns the Result of CodeGeneratorResponse bytes.
-/// #           unimplemented!()
-///         })
-///         .unwrap();
 ///
-///     // The generated file names depend on your plugin logic and the contents of
-///     // the input proto files, but typically they will be like this:
-///     assert!(std::path::Path::new("path/to/my/output_dir/my_protobuf_file.rs").exists());
-///     assert!(std::path::Path::new("path/to/my/output_dir/my_protobuf_file2.rs").exists());
-/// # }
+/// Needs real paths on disk. For a runnable example that only needs `protoc` on
+/// `PATH`, see [`ProtocOnMemory`].
+///
+/// ```no_run
+/// use protoc_plugin_by_closure::Protoc;
+/// use std::time::Duration;
+///
+/// Protoc::new()
+///     .proto_file("my_protobuf_file.proto")
+///     .proto_file("my_protobuf_file2.proto")
+///     .proto_path("path/to/my/input_proto_dir/")
+///     .out_dir("path/to/my/output_dir/")
+///     .run(Duration::from_secs(3), |_request_bytes| {
+///         // CodeGeneratorRequest bytes in → CodeGeneratorResponse bytes out.
+///         Ok(Vec::new())
+///     })
+///     .unwrap();
+///
+/// assert!(std::path::Path::new("path/to/my/output_dir/my_protobuf_file.rs").exists());
+/// assert!(std::path::Path::new("path/to/my/output_dir/my_protobuf_file2.rs").exists());
 /// ```
 pub struct Protoc {
     protoc_path: PathBuf,
@@ -201,34 +201,57 @@ impl Protoc {
 /// See the [crate level documentation](crate) or [`Protoc`] for the basic explanations.
 ///
 /// # Example
+///
+/// This doctest runs for real: it needs `protoc` on `PATH` and the plugin binary
+/// built via `-Z bindeps` (this repo's `.cargo/config.toml`).
+///
+/// ```
+/// use protoc_plugin_by_closure::ProtocOnMemory;
+/// use std::time::Duration;
+///
+/// let files = ProtocOnMemory::new()
+///     .add_file(
+///         "empty.proto",
+///         r#"syntax = "proto3"; package empty;"#,
+///     )
+///     .run(Duration::from_secs(3), |_request_bytes| {
+///         // Empty CodeGeneratorResponse → no generated files.
+///         Ok(Vec::new())
+///     })
+///     .expect("protoc + plugin IPC");
+/// assert!(files.is_empty());
+/// ```
+///
+/// Multi-file / nested virtual paths (compile-checked only):
+///
 /// ```no_run
-/// # fn run_protoc() {
-///     use protoc_plugin_by_closure::ProtocOnMemory;
-///     use std::time::Duration;
-///     let result_files = ProtocOnMemory::new()
-///         .add_file("my_protobuf_file.proto", r#"
+/// use protoc_plugin_by_closure::ProtocOnMemory;
+/// use std::time::Duration;
+///
+/// let result_files = ProtocOnMemory::new()
+///     .add_file(
+///         "my_protobuf_file.proto",
+///         r#"
 /// syntax = "proto3";
 /// package my_package;
 /// message MyMessage {
 ///   string name = 1;
-/// }"#)
-///         .add_file("another/path/to/my_protobuf_file2.proto", r#"
+/// }"#,
+///     )
+///     .add_file(
+///         "another/path/to/my_protobuf_file2.proto",
+///         r#"
 /// syntax = "proto3";
 /// package my_package2;
 /// message MyMessage2 {
 ///   string name2 = 2;
-/// }"#)
-///         .run(Duration::from_secs(3), |request_bytes| {
-///             // Your plugin logic here, which takes the CodeGeneratorRequest bytes
-///             // and returns the Result of CodeGeneratorResponse bytes.
-/// #           unimplemented!()
-///         })
-///         .unwrap();
+/// }"#,
+///     )
+///     .run(Duration::from_secs(3), |_request_bytes| Ok(Vec::new()))
+///     .unwrap();
 ///
-///     // The generated filenames depend on your plugin logic, but typically they will be like this:
-///     assert!(result_files.iter().any(|(name, _)| name == "my_package.rs"));
-///     assert!(result_files.iter().any(|(name, _)| name == "my_package2.rs"));
-/// # }
+/// assert!(result_files.iter().any(|(name, _)| name == "my_package.rs"));
+/// assert!(result_files.iter().any(|(name, _)| name == "my_package2.rs"));
 /// ```
 #[cfg(feature = "on-memory")]
 pub struct ProtocOnMemory {

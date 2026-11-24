@@ -54,7 +54,10 @@ Same as the Install snippets: **Nightly**, **`bindeps`** enabled for the dependi
 
 # Example
 
-```rust
+Illustrative paths only — see [`ProtocOnMemory`] for a doctest that runs against a
+real `protoc` on `PATH`.
+
+```rust,no_run
 use protoc_plugin_by_closure::Protoc;
 use std::time::Duration;
 
@@ -63,9 +66,10 @@ Protoc::new()
     .proto_file("my_protobuf_file2.proto")
     .proto_path("path/to/my/input_proto_dir/")
     .out_dir("path/to/my/output_dir/")
-    .run(Duration::from_secs(3), |request_bytes| {
-        // Your plugin logic here, which takes the CodeGeneratorRequest bytes
-        // and returns the Result of CodeGeneratorResponse bytes.
+    .run(Duration::from_secs(3), |_request_bytes| {
+        // Your plugin logic here: CodeGeneratorRequest bytes in,
+        // CodeGeneratorResponse bytes out.
+        Ok(Vec::new())
     })
     .unwrap();
 

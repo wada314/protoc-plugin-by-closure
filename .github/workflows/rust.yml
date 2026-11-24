@@ -33,10 +33,11 @@ jobs:
         run: cargo +nightly fmt --all -- --check
       - name: Clippy
         run: cargo +nightly clippy --locked --all-targets -- -D warnings
-      - name: Test
+      - name: Test (includes doctests)
         run: cargo +nightly test --locked
       - name: Test without default features
         # `on-memory` is optional; keep `Protoc`-only builds green.
+        # Doctests for `ProtocOnMemory` are skipped when the feature is off.
         run: cargo +nightly test --locked --no-default-features
       - name: Docs
         env:
