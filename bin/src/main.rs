@@ -12,40 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+mod parameter;
+
 use ::anyhow::{Result, anyhow};
 use ::ipc_channel::ipc::{IpcSender, bytes_channel};
-use ::protobuf_core::{AsRefExtProtobuf, FieldValue};
 use ::std::io::{Read, Write, stdin, stdout};
 
-// Field number for CodeGeneratorRequest.parameter field
-// See: google/protobuf/compiler/plugin.proto in the Google Protobuf repository.
-//
-// The parameter field contains the IPC initialization key passed via --rust-ppbc_opt.
-// We use protobuf-core to parse this single field without deserializing the entire message.
-const CODE_GENERATOR_REQUEST_PARAMETER_FIELD_NUMBER: u32 = 2;
-
-fn find_last_string_field(input: &[u8], target_field_number: u32) -> Result<Option<String>> {
-    let mut result: Option<String> = None;
-
-    for field_result in input.read_protobuf_fields() {
-        let field = field_result.map_err(|e| anyhow!("Failed to parse protobuf field: {}", e))?;
-
-        // Extract string field if it matches the target field number
-        if field.field_number.as_u32() == target_field_number
-            && let FieldValue::Len(bytes) = field.value
-        {
-            result = Some(std::str::from_utf8(bytes)?.to_owned());
-        }
-    }
-
-    Ok(result)
-}
+use self::parameter::{CODE_GENERATOR_REQUEST_PARAMETER_FIELD_NUMBER, find_last_string_field};
 
 fn main() -> Result<()> {
     let mut input_buffer = Vec::new();
     stdin().read_to_end(&mut input_buffer)?;
 
-    let ipc_init_key = find_last_string_field(&input_buffer, CODE_GENERATOR_REQUEST_PARAMETER_FIELD_NUMBER)?.ok_or_else(|| {
+    let ipc_init_key = find_last_string_field(
+        &input_buffer,
+        CODE_GENERATOR_REQUEST_PARAMETER_FIELD_NUMBER,
+    )?
+    .ok_or_else(|| {
         anyhow!(
             "input CodeGeneratorRequest proto does not contain a parameter field (2) (IPC init key)."
         )
