@@ -68,7 +68,8 @@ Protoc::new()
     .proto_path("path/to/my/input_proto_dir/")
     .out_dir("path/to/my/output_dir/")
     .run(Duration::from_secs(3), |_request_bytes| {
-        // Encode a CodeGeneratorResponse and return its bytes.
+        // Empty response → no output files. Replace with encoded
+        // CodeGeneratorResponse bytes when you want files written.
         Ok(Vec::new())
     })
     .unwrap();
