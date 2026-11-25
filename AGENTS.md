@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Instructions for coding agents working in this repository. This file is the [AGENTS.md](https://agents.md/) entry point. Crate readmes (`lib/readme.md`, `bin/readme.md`) are for humans.
+Instructions for coding agents working in this repository. This file is the [AGENTS.md](https://agents.md/) entry point. Human docs: root [`README.md`](README.md) (GitHub landing), crate readmes (`lib/readme.md`, `bin/readme.md`).
 
 ## Overview
 
@@ -51,4 +51,5 @@ RUSTDOCFLAGS='-D warnings' cargo +nightly doc --no-deps --workspace
 
 ## Docs
 
-Architecture notes and the `find_last_string_field` pattern: [`AI_REFERENCES.md`](AI_REFERENCES.md). New durable agent instructions belong here in `AGENTS.md`.
+- GitHub landing page: [`README.md`](README.md). Keep its Install / Example / Features sections aligned with [`lib/readme.md`](lib/readme.md) (rustdoc via `include_str!`, crates.io `readme`).
+- Architecture notes and the `find_last_string_field` pattern: [`AI_REFERENCES.md`](AI_REFERENCES.md). New durable agent instructions belong here in `AGENTS.md`.
